@@ -4,7 +4,7 @@
   </head>
   <body>
     <p>Hello<p>
-    [https://server.chadlim1.repl.co/](https://server.chadlim1.repl.co/)
+    https://server.chadlim1.repl.co/
   </body>
 </html>
 
