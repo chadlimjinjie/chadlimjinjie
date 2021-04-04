@@ -4,7 +4,7 @@
   </head>
   <body>
     <p>Hello<p>
-    <a href="https://server.chadlim1.repl.co/" target="_blank">https://server.chadlim1.repl.co/</a>
+    <a href="https://server.chadlim1.repl.co/" target="_blank">Server</a>
   </body>
 </html>
 
