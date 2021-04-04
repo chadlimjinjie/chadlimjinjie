@@ -1,16 +1,8 @@
-## Hi there 👋
-
-### 🔭 I’m currently working on
-- 
-
-### 🌱 I’m currently learning
-- React
-
-### 🔍 I'm looking to explore
-- Blockchain
-- Artificial intelligence
-
-### 😄 Pronouns: (He/Him)
+<html>
+  <head>
+    <title>Hello</title>
+  </head>
+</html>
 
 <!--
 **chadlimjinjie/chadlimjinjie** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
