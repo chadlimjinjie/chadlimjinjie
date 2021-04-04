@@ -4,9 +4,7 @@
   </head>
   <body>
     <p>Hello<p>
-    <script>
-      console.log("Helolo");
-    </script>
+    [https://server.chadlim1.repl.co/](https://server.chadlim1.repl.co/)
   </body>
 </html>
 
