@@ -1,13 +1,3 @@
-<html>
-  <head>
-    
-  </head>
-  <body>
-    <p>Hello<p>
-    <a href="https://server.chadlim1.repl.co/" target="_blank">Server</a>
-  </body>
-</html>
-
 ## Hi there 👋
 
 ### 🔭 I’m currently working on
