@@ -10,8 +10,7 @@
 - Blockchain
 - Artificial intelligence
 
-### ⚡ Fun fact:
--z
+### 😄 Pronouns: (He/Him)
 
 <!--
 **chadlimjinjie/chadlimjinjie** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
