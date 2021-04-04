@@ -1,9 +1,12 @@
 <html>
   <head>
-    <title>Hello</title>
+    
   </head>
   <body>
     <p>Hello<p>
+    <script>
+      console.log("Helolo");
+    </script>
   </body>
 </html>
 
