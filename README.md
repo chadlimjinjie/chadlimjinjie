@@ -1,7 +1,11 @@
 ## Hi there 👋
 
-- ### 🌱 I’m currently learning
+### 🌱 I’m currently learning
 - React
+
+### 🔍 I'm looking to explore
+- Blockchain
+- Artificial intelligence
 
 <!--
 **chadlimjinjie/chadlimjinjie** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
