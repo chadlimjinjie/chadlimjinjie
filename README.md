@@ -5,6 +5,7 @@
 
 ### 🌱 I’m currently learning
 - React
+- Next.js
 
 ### 🔍 I'm looking to explore
 - Blockchain
