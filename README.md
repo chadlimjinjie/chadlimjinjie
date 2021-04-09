@@ -11,6 +11,9 @@
 - Blockchain
 - Artificial intelligence
 
+### How to reach me
+- (chadlimjinjie@gmail.)[chadlimjinjie@gmail.com]
+
 ### 😄 Pronouns: (He/Him)
 
 <!--
