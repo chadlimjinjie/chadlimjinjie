@@ -1,1 +1,1 @@
-<a href="https://crypto.com/nft/profile/chad">Crypto.com NFT</a>
+<a href="https://crypto.com/nft/profile/chad" style="text-decoration: none;">Crypto.com NFT</a>
