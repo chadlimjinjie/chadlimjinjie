@@ -1,9 +1,5 @@
 <div align="center">
   <h1>Hi there</h1>
   
-  [Google](https://www.google.com)
+  Information Technology Student at Republic Polytechnic
 </div>
-
-
-[Google](https://www.google.com)
-
