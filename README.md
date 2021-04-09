@@ -1,6 +1,8 @@
 <div align="center">
   <h1>Hi there</h1>
-  [https://www.google.com](Google)
+  
+  [Google](https://www.google.com)
+  
 </div>
 
 
