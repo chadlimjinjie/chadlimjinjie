@@ -1,4 +1,3 @@
-
-<a href="https://crypto.com/nft/profile/chad">Crypto.com NFT</a>
-
-<center>###hello</center>
+<div align="center">
+  Hello
+</div>
