@@ -12,7 +12,7 @@
 - Artificial intelligence
 
 ### How to reach me
-- [chadlimjinjie@gmail.com](mail:chadlimjinjie@gmail.com)
+- [chadlimjinjie@gmail.com](mailto:chadlimjinjie@gmail.com)
 
 ### 😄 Pronouns: (He/Him)
 
