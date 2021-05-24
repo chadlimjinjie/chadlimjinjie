@@ -5,10 +5,5 @@
     <p>Singapore</p>
     <p>Information Technology Student at Republic Polytechnic</p>
   </div>
-  <div>
-    <p>Back-end web developer</p>
-    <p>Languages > JavaScript, Python, Java</p>
-    <p>Databases > MySQL, MongoDB</p>
-    <p>Frameworks > MERN, React, React Native, Node.js</p>
-  </div>
+
 </div>
