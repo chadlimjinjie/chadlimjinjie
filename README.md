@@ -9,6 +9,6 @@
     <p>Back-end web developer</p>
     <p>Languages > JavaScript, Python, Java</p>
     <p>Databases > MySQL, MongoDB</p>
-    <p>Frameworks > MERN, React, React Native</p>
+    <p>Frameworks > MERN, React, React Native, Node.js</p>
   </div>
 </div>
