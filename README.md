@@ -6,6 +6,5 @@
   <p>Back-end web developer</p>
   <p>Node.js | Python</p>
 </div>
-<div>
-  - Writing software
-</div>
+
+- Writing software
