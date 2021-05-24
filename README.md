@@ -4,6 +4,5 @@
   <p>Singapore</p>
   <p>Information Technology Student at Republic Polytechnic</p>
   <p>Back-end web developer</p>
-  </br>
   <p>Node.js | Python</p>
 </div>
