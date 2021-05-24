@@ -5,6 +5,7 @@
     <p>Singapore</p>
     <p>Information Technology Student at Republic Polytechnic</p>
     <p>Back-end web developer</p>
-    <p>Node.js | Python</p>
+    <p>Node.js | Python | Java</p>
+    <p>Frameworks: React</p>
   </div>
 </div>
