@@ -8,6 +8,6 @@
   <div>
     <p>Back-end web developer</p>
     <p>Languages > JavaScript, Python, Java</p>
-    <p>Frameworks > MERN</p>
+    <p>Frameworks > MERN, React, React Native</p>
   </div>
 </div>
