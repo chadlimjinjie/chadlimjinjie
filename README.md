@@ -8,7 +8,7 @@
   </div>
   <div>
     <p>Back-end web developer</p>
-    <p>Node.js | Python | Java</p>
-    <p>Frameworks: React</p>
+    <p>Languages > JavaScript, Python, Java</p>
+    <p>Frameworks > MERN</p>
   </div>
 </div>
