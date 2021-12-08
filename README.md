@@ -1,5 +1,7 @@
 ### Hi there 👋
 
+[![Spotify recently played](https://spotify-recently-played-readme.vercel.app/api?user=chadlimjinjie)](https://open.spotify.com/user/chadlimjinjie)
+
 <!--
 **chadlimjinjie/chadlimjinjie** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
 
