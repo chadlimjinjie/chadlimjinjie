@@ -13,6 +13,7 @@ I like listening to music while programming or mugging school assignments
 - Python (~ 2 year)
 - JavaScript (~ 1 year)
 - TypeScript (< 6 months)
+- Node.js (~ 1 year)
 - Java (< 6 months)
 
 🔭 I’m currently working on
