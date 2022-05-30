@@ -20,6 +20,8 @@ I like listening to music while programming or mugging school assignments
 
 🌱 I’m currently learning
 
+- FastAPI Python
+
 👯 I’m looking to collaborate on
 
 - Payment solutions integration
