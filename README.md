@@ -11,8 +11,9 @@ I like listening to music while programming or mugging school assignments
 <summary>Social</summary>
 <br>
 
-[![](https://img.shields.io/badge/Twitter-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white)](https://replit.com/@ChadLim1)
 [![](https://img.shields.io/badge/replit-667881?style=for-the-badge&logo=replit&logoColor=white)](https://replit.com/@ChadLim1)
+[![](https://img.shields.io/badge/Twitter-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white)](https://twitter.com/chadlimjinjie)
+[![](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/chad-lim-739b36186/)
 </details>
 
 📚 My programming stack experience
