@@ -1,19 +1,18 @@
-### Hi there I'm Chad 👋
-
+[![Typing SVG](https://readme-typing-svg.herokuapp.com?size=100&width=1200&height=200&lines=Hey+there+I'm+Chad+%F0%9F%91%8B;CHADLIM.TECH)](https://git.io/typing-svg)
 I like listening to music while programming or mugging school assignments
 
-||[![spotify-github-profile](https://spotify-github-profile.vercel.app/api/view?uid=chadlimjinjie&cover_image=true&theme=novatorem&bar_color=53b14f&bar_color_cover=false)](https://spotify-github-profile.vercel.app/api/view?uid=chadlimjinjie&redirect=true)|
-|---|---|
-|[![Anurag's GitHub stats](https://github-readme-stats.vercel.app/api?username=chadlimjinjie)](https://github.com/anuraghazra/github-readme-stats)|[![Spotify recently played](https://spotify-recently-played-readme.vercel.app/api?user=chadlimjinjie)](https://open.spotify.com/user/chadlimjinjie)|
-
-<details open>
+<details>
 <summary>Pinned</summary>
 <br>
 
+|||
+|---|---|
+|||
+</details>
+
 ||[![spotify-github-profile](https://spotify-github-profile.vercel.app/api/view?uid=chadlimjinjie&cover_image=true&theme=novatorem&bar_color=53b14f&bar_color_cover=false)](https://spotify-github-profile.vercel.app/api/view?uid=chadlimjinjie&redirect=true)|
 |---|---|
 |[![Anurag's GitHub stats](https://github-readme-stats.vercel.app/api?username=chadlimjinjie)](https://github.com/anuraghazra/github-readme-stats)|[![Spotify recently played](https://spotify-recently-played-readme.vercel.app/api?user=chadlimjinjie)](https://open.spotify.com/user/chadlimjinjie)|
-</details>
 
 <details open>
 <summary>📫 How to reach me</summary>
