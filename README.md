@@ -7,6 +7,15 @@ I like listening to music while programming or mugging school assignments
 |[![Anurag's GitHub stats](https://github-readme-stats.vercel.app/api?username=chadlimjinjie)](https://github.com/anuraghazra/github-readme-stats)|[![Spotify recently played](https://spotify-recently-played-readme.vercel.app/api?user=chadlimjinjie)](https://open.spotify.com/user/chadlimjinjie)|
 
 <details open>
+<summary>Pinned</summary>
+<br>
+
+||[![spotify-github-profile](https://spotify-github-profile.vercel.app/api/view?uid=chadlimjinjie&cover_image=true&theme=novatorem&bar_color=53b14f&bar_color_cover=false)](https://spotify-github-profile.vercel.app/api/view?uid=chadlimjinjie&redirect=true)|
+|---|---|
+|[![Anurag's GitHub stats](https://github-readme-stats.vercel.app/api?username=chadlimjinjie)](https://github.com/anuraghazra/github-readme-stats)|[![Spotify recently played](https://spotify-recently-played-readme.vercel.app/api?user=chadlimjinjie)](https://open.spotify.com/user/chadlimjinjie)|
+</details>
+
+<details open>
 <summary>📫 How to reach me</summary>
 <br>
 
