@@ -6,6 +6,12 @@ I like listening to music while programming or mugging school assignments
 |---|---|
 |[![Anurag's GitHub stats](https://github-readme-stats.vercel.app/api?username=chadlimjinjie)](https://github.com/anuraghazra/github-readme-stats)|[![Spotify recently played](https://spotify-recently-played-readme.vercel.app/api?user=chadlimjinjie)](https://open.spotify.com/user/chadlimjinjie)|
 
+<details open>
+<summary>📫 How to reach me</summary>
+<br>
+
+[![](https://img.shields.io/badge/Gmail-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:chadlimjinjie@gmail.com)
+</details>
 
 <details>
 <summary>Social</summary>
@@ -45,10 +51,9 @@ I like listening to music while programming or mugging school assignments
 
 💬 Ask me about
 
-📫 How to reach me
 
-- [Mail](mailto:chadlimjinjie@gmail.com)
-- [LinkedIn](https://www.linkedin.com/in/chad-lim-739b36186)
+
+
 
 <!--
 **chadlimjinjie/chadlimjinjie** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
