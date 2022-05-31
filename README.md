@@ -6,7 +6,7 @@ I like listening to music while programming or mugging school assignments
 |---|---|
 ||[![Spotify recently played](https://spotify-recently-played-readme.vercel.app/api?user=chadlimjinjie)](https://open.spotify.com/user/chadlimjinjie)|
 
-
+[![](https://img.shields.io/badge/replit-667881?style=for-the-badge&logo=replit&logoColor=white)](https://replit.com/@ChadLim1)
 
 
 📚 My programming stack experience
