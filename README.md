@@ -1,4 +1,4 @@
-<img src="https://readme-typing-svg.herokuapp.com?size=100&vCenter=true&width=1200&height=200&lines=Hey+there+I'm+Chad+%F0%9F%91%8B;CHADLIM.TECH)](https://git.io/typing-svg" />
+<img src="https://readme-typing-svg.herokuapp.com?size=100&vCenter=true&width=1200&height=200&lines=Hey+there+I'm+Chad+%F0%9F%91%8B;CHADLIM.TECH" />
 
 I like listening to music while programming or mugging school assignments
 
@@ -19,7 +19,9 @@ I like listening to music while programming or mugging school assignments
     <td>
       <img src="https://github-readme-stats.vercel.app/api?username=chadlimjinjie" />
     </td>
-    <td></td>
+    <td>
+      <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=chadlimjinjie&langs_count=8" />
+    </td>
   </tr>
 </table>
 </details>
