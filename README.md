@@ -2,12 +2,12 @@
 
 I like listening to music while programming or mugging school assignments
 
-||[![Anurag's GitHub stats](https://github-readme-stats.vercel.app/api?username=chadlimjinjie)](https://github.com/anuraghazra/github-readme-stats)|
+|[![Anurag's GitHub stats](https://github-readme-stats.vercel.app/api?username=chadlimjinjie)](https://github.com/anuraghazra/github-readme-stats)|[![spotify-github-profile](https://spotify-github-profile.vercel.app/api/view?uid=chadlimjinjie&cover_image=true&theme=novatorem&bar_color=53b14f&bar_color_cover=false)](https://spotify-github-profile.vercel.app/api/view?uid=chadlimjinjie&redirect=true)|
 |---|---|
-|[![spotify-github-profile](https://spotify-github-profile.vercel.app/api/view?uid=chadlimjinjie&cover_image=true&theme=novatorem&bar_color=53b14f&bar_color_cover=false)](https://spotify-github-profile.vercel.app/api/view?uid=chadlimjinjie&redirect=true)||
+||[![Spotify recently played](https://spotify-recently-played-readme.vercel.app/api?user=chadlimjinjie)](https://open.spotify.com/user/chadlimjinjie)|
 
 
-[![Spotify recently played](https://spotify-recently-played-readme.vercel.app/api?user=chadlimjinjie)](https://open.spotify.com/user/chadlimjinjie)
+
 
 📚 My programming stack experience
 - React (~ 1 year)
