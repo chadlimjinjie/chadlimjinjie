@@ -38,6 +38,10 @@ I like listening to music while programming or mugging school assignments
 [![](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/chad-lim-739b36186/)
 </details>
 
+<div class="mb-3">
+  Hi
+</div>
+
 📚 My programming stack experience
 - React (~ 1 year)
 - React Native (Expo) (~ 1 year)
