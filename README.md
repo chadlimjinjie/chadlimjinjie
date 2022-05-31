@@ -2,7 +2,10 @@
 
 I like listening to music while programming or mugging school assignments
 
-[![Spotify recently played](https://spotify-recently-played-readme.vercel.app/api?user=chadlimjinjie)](https://open.spotify.com/user/chadlimjinjie)
+|[![Spotify recently played](https://spotify-recently-played-readme.vercel.app/api?user=chadlimjinjie)](https://open.spotify.com/user/chadlimjinjie)||
+|---|---|
+|||
+
 
 📚 My programming stack experience
 - React (~ 1 year)
