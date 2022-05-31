@@ -14,6 +14,7 @@ I like listening to music while programming or mugging school assignments
 <details>
 <summary>Stats</summary>
 <br>
+
 <table>
   <tr>
     <td>
