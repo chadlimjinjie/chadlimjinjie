@@ -1,6 +1,8 @@
 <img src="https://readme-typing-svg.herokuapp.com?size=100&vCenter=true&width=1200&height=200&lines=Hey+there+I'm+Chad+%F0%9F%91%8B;CHADLIM.TECH" />
 
-I like listening to music while programming or mugging school assignments
+<p>Hello my name is Chad, I have prior experience in Agile software development in a product team.</p>
+<p>In my free time I like exploring new frontend/backend frameworks and writing code.</p>
+<p>I like listening to music while programming or mugging school assignments.</p>
 
 <details>
 <summary>Pinned</summary>
