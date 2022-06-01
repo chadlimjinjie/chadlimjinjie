@@ -11,6 +11,7 @@ I like listening to music while programming or mugging school assignments
 |||
 </details>
 
+
 <details>
 <summary>Stats</summary>
 <br>
@@ -27,8 +28,23 @@ I like listening to music while programming or mugging school assignments
 </table>
 </details>
 
-|[![spotify-github-profile](https://spotify-github-profile.vercel.app/api/view?uid=chadlimjinjie&cover_image=true&theme=novatorem&bar_color=53b14f&bar_color_cover=false)](https://spotify-github-profile.vercel.app/api/view?uid=chadlimjinjie&redirect=true)|[![Spotify recently played](https://spotify-recently-played-readme.vercel.app/api?user=chadlimjinjie)](https://open.spotify.com/user/chadlimjinjie)|
-|---|---|
+
+<details>
+<summary>Listening</summary>
+<br>
+
+<table>
+  <tr>
+    <td>
+      <img src="https://spotify-github-profile.vercel.app/api/view?uid=chadlimjinjie&cover_image=true&theme=novatorem&bar_color=53b14f&bar_color_cover=false" />
+    </td>
+    <td>
+      <img src="https://spotify-recently-played-readme.vercel.app/api?user=chadlimjinjie" />
+    </td>
+  </tr>
+</table>
+</details>
+
 
 <details open>
 <summary>📫 How to reach me</summary>
