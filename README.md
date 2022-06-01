@@ -64,6 +64,11 @@
 [![](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/chad-lim-739b36186/)
 </details>
 
+<a href="https://unstoppabledomains.com/d/chadlim.wallet">
+  <img src="https://img.shields.io/badge/Buy_Me_A_Coffee-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black" />
+</a>
+
+
 📚 My programming stack experience
 - React (~ 1 year)
 - React Native (Expo) (~ 1 year)
