@@ -92,6 +92,7 @@
 
 - Payment solutions integration
 - Open source
+- Tech for public good
 
 🤔 I’m looking for help with
 
