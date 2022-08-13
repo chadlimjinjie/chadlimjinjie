@@ -51,6 +51,7 @@
 <details open>
 <summary>📫 How to reach me</summary>
 <br>
++65 8113 6098
 
 [![](https://img.shields.io/badge/Gmail-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:chadlimjinjie@gmail.com)
 </details>
