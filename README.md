@@ -1,6 +1,6 @@
 <img src="https://readme-typing-svg.herokuapp.com?size=100&vCenter=true&width=1200&height=200&lines=Hey+there+I'm+Chad+%F0%9F%91%8B;CHADLIM.TECH" />
 
-<p>Hello my name is Chad, I have prior experience in Agile software development in a product team.</p>
+<p>Hello my name is Chad, I have experience in Agile software development in a product team.</p>
 <p>In my free time I like exploring new frontend/backend frameworks and developing web applications/example codes using open-source libraries to share with other developers to fast track product integrations.</p>
 <p>I like listening to music while programming or mugging school assignments.</p>
 
