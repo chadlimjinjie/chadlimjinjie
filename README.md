@@ -86,7 +86,7 @@
 
 🌱 I’m currently learning
 
-- Angular
+- 
 
 👯 I’m looking to collaborate on
 
