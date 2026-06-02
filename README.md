@@ -1,38 +1,61 @@
 <img src="https://readme-typing-svg.herokuapp.com?size=100&vCenter=true&width=1200&height=200&lines=Hey+there+I'm+Chad+%F0%9F%91%8B;CHADLIM.TECH" />
 
-<p>Hello my name is Chad, I have experience in Agile software development in a product team.</p>
-<p>In my free time I like exploring new frontend/backend frameworks and developing web applications/example codes using open-source libraries to share with other developers to fast track product integrations.</p>
-<p>I like listening to music while programming or mugging school assignments.</p>
+Software Engineer building [Midtone Technologies](https://midtone.tech) · Information Technology student · Based in Singapore 🇸🇬
 
-<details>
-<summary>Pinned</summary>
-<br>
+I enjoy exploring frontend/backend frameworks and building web applications. Currently working with **React**, **Node.js**, and **Golang**.
 
-|||
+---
+
+### 🛠️ Stack
+
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
+![Go](https://img.shields.io/badge/Go-00ADD8?style=for-the-badge&logo=go&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)
+
+---
+
+### 🌐 Midtone Technologies
+
+| Service | Status |
 |---|---|
-|||
-</details>
+| Website | [![Website](https://img.shields.io/uptimerobot/status/m803208273-d847517ccf17fc0a3f3e3185?label=midtone.tech&style=for-the-badge)](https://midtone.tech) |
+| Backend | [![Backend](https://img.shields.io/uptimerobot/status/m803208275-d847517ccf17fc0a3f3e3185?label=API+Gateway&style=for-the-badge)](https://gateway.midtone.tech) |
 
+---
 
-<details>
-<summary>Stats</summary>
-<br>
+### 📊 Stats
 
 <table>
   <tr>
     <td>
-      <img src="https://github-readme-stats.vercel.app/api?username=chadlimjinjie" />
+      <img src="https://github-readme-stats.vercel.app/api?username=chadlimjinjie&show_icons=true&theme=default" />
     </td>
     <td>
-      <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=chadlimjinjie&langs_count=8" />
+      <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=chadlimjinjie&langs_count=8&layout=compact" />
     </td>
   </tr>
 </table>
-</details>
 
+---
+
+### 👯 Looking to collaborate on
+
+- Payment solutions integration
+- Open source
+- Tech for public good
+
+---
+
+### 📫 Reach me
+
+[![Gmail](https://img.shields.io/badge/Gmail-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:chadlimjinjie@gmail.com)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/chad-lim-739b36186/)
+[![Twitter](https://img.shields.io/badge/Twitter-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white)](https://twitter.com/chadlimjinjie)
 
 <details>
-<summary>Listening</summary>
+<summary>🎧 Listening</summary>
 <br>
 
 <table>
@@ -46,75 +69,3 @@
   </tr>
 </table>
 </details>
-
-
-<details open>
-<summary>📫 How to reach me</summary>
-<br>
-+65 8113 6098
-
-[![](https://img.shields.io/badge/Gmail-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:chadlimjinjie@gmail.com)
-</details>
-
-<details>
-<summary>Social</summary>
-<br>
-
-[![](https://img.shields.io/badge/replit-667881?style=for-the-badge&logo=replit&logoColor=white)](https://replit.com/@ChadLim1)
-[![](https://img.shields.io/badge/Twitter-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white)](https://twitter.com/chadlimjinjie)
-[![](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/chad-lim-739b36186/)
-</details>
-
-<a href="https://unstoppabledomains.com/d/chadlim.wallet">
-  <img src="https://img.shields.io/badge/Buy_Me_A_Coffee-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black" />
-</a>
-
-
-📚 My programming stack experience
-- React (~ 1 year)
-- React Native (Expo) (~ 1 year)
-- Angular (< 6 months)
-- Express.js (~ 1 year)
-- MongoDB (~ 1 year)
-- Python (~ 2 year)
-- JavaScript (~ 1 year)
-- TypeScript (< 6 months)
-- Node.js (~ 1 year)
-- Java (< 6 months)
-
-🔭 I’m currently working on
-
-🌱 I’m currently learning
-
-- 
-
-👯 I’m looking to collaborate on
-
-- Payment solutions integration
-- Open source
-- Tech for public good
-
-🤔 I’m looking for help with
-
-- Open source opportunities to work on
-
-💬 Ask me about
-
-
-
-
-
-<!--
-**chadlimjinjie/chadlimjinjie** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
-
-Here are some ideas to get you started:
-
-- 🔭 I’m currently working on ...
-- 🌱 I’m currently learning ...
-- 👯 I’m looking to collaborate on ...
-- 🤔 I’m looking for help with ...
-- 💬 Ask me about ...
-- 📫 How to reach me: ...
-- 😄 Pronouns: ...
-- ⚡ Fun fact: ...
--->
