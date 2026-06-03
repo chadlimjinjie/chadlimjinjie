@@ -30,10 +30,10 @@ I enjoy exploring frontend/backend frameworks and building web applications. Cur
 <table>
   <tr>
     <td>
-      <img src="https://github-readme-stats.vercel.app/api?username=chadlimjinjie&show_icons=true&theme=default" />
+      <img src="https://github-readme-stats-five-iota-18.vercel.app/api?username=chadlimjinjie&show_icons=true&theme=default&cache_seconds=86400&rank_icon=github" />
     </td>
     <td>
-      <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=chadlimjinjie&langs_count=8&layout=compact" />
+      <img src="https://github-readme-stats-five-iota-18.vercel.app/api/top-langs/?username=chadlimjinjie&langs_count=8&layout=compact&cache_seconds=86400" />
     </td>
   </tr>
 </table>
