@@ -1,3 +1,9 @@
+<style>
+  table td {
+    border: none !important;
+  }
+</style>
+
 <img src="https://readme-typing-svg.herokuapp.com?size=100&vCenter=true&width=1200&height=200&lines=Hey+there+I'm+Chad+%F0%9F%91%8B;CHADLIM.TECH" />
 
 Software Engineer building [Midtone Technologies](https://midtone.tech) · Information Technology student · Based in Singapore 🇸🇬
