@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { createRootRoute, Link, Outlet, useMatches } from '@tanstack/react-router'
+import { ThemeToggle } from '@/components/theme-toggle'
 import { pages } from '@/lib/seo'
 
 export const Route = createRootRoute({
@@ -29,6 +30,7 @@ function Root() {
         <Link to="/location" className="[&.active]:font-semibold">
           Location
         </Link>
+        <ThemeToggle />
       </nav>
       <main className="p-4">
         <Outlet />
