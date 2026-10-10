@@ -1,3 +1,4 @@
+import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 
 type Point = { lat: number; lon: number; timestamp: string } | null
@@ -6,20 +7,28 @@ type Point = { lat: number; lon: number; timestamp: string } | null
 const SPAN = 0.005
 
 export const Route = createFileRoute('/location')({
-  loader: async (): Promise<Point> => {
-    const res = await fetch('/api/location')
-    if (!res.ok) throw new Error(`Location request failed: ${res.status}`)
-    return res.json()
-  },
   component: Location,
 })
 
 function Location() {
-  const point = Route.useLoaderData()
+  const { data: point, isPending, error } = useQuery({
+    queryKey: ['location'],
+    queryFn: async (): Promise<Point> => {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/location`)
+      if (!res.ok) throw new Error(`Location request failed: ${res.status}`)
+      return res.json()
+    },
+    // matches the function's s-maxage, polling faster only hits the CDN cache
+    refetchInterval: 30_000,
+  })
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-semibold">Location</h1>
-      {point ? (
+      {isPending ? (
+        <p>Loading…</p>
+      ) : error ? (
+        <p role="alert">{error.message}</p>
+      ) : point ? (
         <>
           <p>
             Updated{' '}

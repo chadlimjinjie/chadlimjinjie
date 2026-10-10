@@ -19,6 +19,8 @@ async fn handler(req: Request) -> Result<Response<Value>, Error> {
             };
             Ok(Response::builder()
                 .header("cache-control", "public, s-maxage=30")
+                // ponytail: site is on another origin and sends a plain GET, so no preflight. Add an OPTIONS arm if it ever sends custom headers.
+                .header("access-control-allow-origin", "*")
                 .body(point)?)
         }
         "POST" => {
