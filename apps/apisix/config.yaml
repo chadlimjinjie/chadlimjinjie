@@ -2,6 +2,19 @@ apisix:
   # Railway/Render inject PORT; 9080 for local runs
   node_listen: ${{PORT:=9080}}
 deployment:
-  role: data_plane
-  role_data_plane:
-    config_provider: yaml
+  role: traditional
+  role_traditional:
+    config_provider: etcd
+  admin:
+    admin_key:
+      - name: admin
+        # No default on purpose: APISIX must not start without a key
+        key: ${{ADMIN_KEY}}
+        role: admin
+    # Railway's proxy hides the client IP, so IP allow-listing is useless; the key is the guard
+    allow_admin:
+      - 0.0.0.0/0
+  etcd:
+    host:
+      - ${{ETCD_HOST:=http://etcd:2379}}
+    prefix: /apisix

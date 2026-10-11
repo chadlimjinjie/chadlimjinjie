@@ -1,0 +1,23 @@
+services:
+  etcd:
+    image: quay.io/coreos/etcd:v3.5.21
+    environment:
+      ETCD_DATA_DIR: /etcd-data
+      ETCD_LISTEN_CLIENT_URLS: http://0.0.0.0:2379
+      ETCD_ADVERTISE_CLIENT_URLS: http://etcd:2379
+    volumes:
+      - etcd-data:/etcd-data
+
+  apisix:
+    build: .
+    depends_on:
+      - etcd
+    environment:
+      ADMIN_KEY: ${ADMIN_KEY:?set ADMIN_KEY}
+    ports:
+      - "9080:9080"
+      # Admin API + dashboard; bound to loopback so the local key is never LAN-reachable
+      - "127.0.0.1:9180:9180"
+
+volumes:
+  etcd-data:
