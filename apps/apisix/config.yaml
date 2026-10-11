@@ -1,0 +1,7 @@
+apisix:
+  # Railway/Render inject PORT; 9080 for local runs
+  node_listen: ${{PORT:=9080}}
+deployment:
+  role: data_plane
+  role_data_plane:
+    config_provider: yaml

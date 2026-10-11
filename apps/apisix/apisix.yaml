@@ -1,0 +1,12 @@
+routes:
+  - uri: /api/location
+    upstream:
+      type: roundrobin
+      scheme: https
+      # Vercel routes by Host header; send the upstream's own host, not the gateway's
+      pass_host: node
+      nodes:
+        - host: ${{LOCATION_HOST}}
+          port: 443
+          weight: 1
+#END
