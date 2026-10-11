@@ -8,4 +8,8 @@ export const pages: Record<string, { title: string; description: string }> = {
     title: `Location | ${SITE}`,
     description: 'Where Chad Lim is right now, on a live map.',
   },
+  '/coins': {
+    title: `Coins | ${SITE}`,
+    description: 'PCGS, NGC and ANACS graded coins collected by Chad Lim.',
+  },
 }

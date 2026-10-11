@@ -30,6 +30,9 @@ function Root() {
         <Link to="/location" className="[&.active]:font-semibold">
           Location
         </Link>
+        <Link to="/coins" className="[&.active]:font-semibold">
+          Coins
+        </Link>
         <ThemeToggle />
       </nav>
       <main className="p-4">
