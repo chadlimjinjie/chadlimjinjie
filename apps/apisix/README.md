@@ -4,9 +4,17 @@ APISIX gateway in traditional mode: routes live in etcd and are managed at runti
 
 ## Run locally
 
+etcd is its own app in `apps/etcd`. From the repo root:
+
 ```sh
-cd apps/apisix
-ADMIN_KEY=dev-key docker compose up --build
+docker network create apisix
+docker build -t etcd apps/etcd
+docker build -t apisix apps/apisix
+# The name "etcd" is what config.yaml's default ETCD_HOST resolves
+docker run -d --name etcd --network apisix -v etcd-data:/etcd-data etcd
+# 9180 on loopback only, so the local admin key is never LAN-reachable
+docker run --rm --network apisix -e ADMIN_KEY=dev-key \
+  -p 9080:9080 -p 127.0.0.1:9180:9180 apisix
 ```
 
 - Gateway: http://localhost:9080
@@ -38,7 +46,7 @@ Only the plugins listed under `plugins:` in `config.yaml` are loaded, to keep CP
 
 Do these in order. Deploying the gateway before etcd is up, or before seeding, takes `/api/location` down.
 
-1. **etcd service**: image `quay.io/coreos/etcd:v3.5.21`, volume mounted at `/etcd-data`, **no public domain**. Env:
+1. **etcd service**: root directory `apps/etcd`, build from the Dockerfile, volume mounted at `/etcd-data`, **no public domain**. Env (overrides the Dockerfile's local defaults):
    - `ETCD_DATA_DIR=/etcd-data`
    - `ETCD_LISTEN_CLIENT_URLS=http://[::]:2379` (the private network may be IPv6-only)
    - `ETCD_ADVERTISE_CLIENT_URLS=http://etcd.railway.internal:2379`
