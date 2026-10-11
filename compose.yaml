@@ -1,0 +1,49 @@
+services:
+  etcd:
+    build: apps/etcd
+    volumes: [etcd-data:/etcd-data]
+    healthcheck:
+      # exec form: the etcd image has no shell
+      test: [CMD, etcdctl, endpoint, health]
+      interval: 2s
+      retries: 15
+
+  apisix:
+    build: apps/apisix
+    environment:
+      ADMIN_KEY: dev-key
+    ports:
+      - 9080:9080
+      # loopback only, so the dev admin key is never LAN-reachable
+      - 127.0.0.1:9180:9180
+    depends_on:
+      etcd: { condition: service_healthy }
+
+  connect-four:
+    build: apps/connect-four-service
+
+  sudoku:
+    build: apps/sudoku-service
+
+  # Routes live in etcd, not git: PUT them on every up (idempotent)
+  seed:
+    image: curlimages/curl:8.11.1
+    depends_on: [apisix]
+    environment:
+      LOCATION_HOST: ${LOCATION_HOST:-}
+    entrypoint: [sh, -ec]
+    command:
+      - |
+        put() { curl -fsS --retry 15 --retry-connrefused --retry-delay 1 -o /dev/null \
+          -X PUT "http://apisix:9180/apisix/admin/routes/$$1" -H 'X-API-KEY: dev-key' -d "$$2"; }
+        ws() { put "$$1" "{\"uri\":\"$$2\",\"enable_websocket\":true,\"upstream\":{\"type\":\"roundrobin\",\"timeout\":{\"connect\":6,\"send\":3600,\"read\":3600},\"nodes\":[{\"host\":\"$$3\",\"port\":$$4,\"weight\":1}]}}"; }
+        ws connect_four_ws /connect-four/ws connect-four 4110
+        ws sudoku_ws /sudoku/ws sudoku 4111
+        if [ -n "$$LOCATION_HOST" ]; then
+          put location "{\"uri\":\"/api/location\",\"upstream\":{\"type\":\"roundrobin\",\"scheme\":\"https\",\"pass_host\":\"node\",\"nodes\":[{\"host\":\"$$LOCATION_HOST\",\"port\":443,\"weight\":1}]}}"
+        else
+          echo 'LOCATION_HOST unset: skipping /api/location'
+        fi
+
+volumes:
+  etcd-data:

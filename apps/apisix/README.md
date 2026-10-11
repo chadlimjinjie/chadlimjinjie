@@ -4,21 +4,17 @@ APISIX gateway in traditional mode: routes live in etcd and are managed at runti
 
 ## Run locally
 
-etcd is its own app in `apps/etcd`. From the repo root:
+`compose.yaml` at the repo root runs etcd, the gateway and both game services, and seeds the routes below on every `up`. From the repo root:
 
 ```sh
-docker network create apisix
-docker build -t etcd apps/etcd
-docker build -t apisix apps/apisix
-# The name "etcd" is what config.yaml's default ETCD_HOST resolves
-docker run -d --name etcd --network apisix -v etcd-data:/etcd-data etcd
-# 9180 on loopback only, so the local admin key is never LAN-reachable
-docker run --rm --network apisix -e ADMIN_KEY=dev-key \
-  -p 9080:9080 -p 127.0.0.1:9180:9180 apisix
+# optional: LOCATION_HOST=<project>.vercel.app in a root .env enables /api/location
+docker compose up --build
+pnpm dev
 ```
 
 - Gateway: http://localhost:9080
-- Dashboard: http://localhost:9180/ui/ (enter the admin key when prompted)
+- Dashboard: http://localhost:9180/ui/ (admin key: `dev-key`)
+- Web: http://localhost:5173, pointed at the gateway by `apps/web/.env.local`
 
 ## Seed the location route
 
