@@ -48,7 +48,11 @@ async fn handler(req: Request) -> Result<Response<Value>, Error> {
 }
 
 fn respond(status: u16, body: Value) -> Result<Response<Value>, Error> {
-    Ok(Response::builder().status(status).body(body)?)
+    // Overland's iOS client rejects a response that isn't declared as JSON, even on 200
+    Ok(Response::builder()
+        .status(status)
+        .header("content-type", "application/json")
+        .body(body)?)
 }
 
 fn authorized(header: &str, token: &str) -> bool {
