@@ -17,6 +17,7 @@ import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarHeader,
+  SidebarInset,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -50,15 +51,15 @@ function Root() {
   return (
     <SidebarProvider>
       <Nav />
-      <div className="flex min-h-svh min-w-0 flex-1 flex-col">
+      <SidebarInset className="min-w-0">
         <header className="flex items-center gap-2 border-b p-2">
           <SidebarTrigger />
           <ThemeToggle />
         </header>
-        <main className="flex-1 p-4">
+        <div className="flex-1 p-4">
           <Outlet />
-        </main>
-      </div>
+        </div>
+      </SidebarInset>
     </SidebarProvider>
   )
 }
@@ -73,7 +74,7 @@ function Nav() {
   const current = tenants.data?.find((t) => t.slug === tenant)
 
   return (
-    <Sidebar>
+    <Sidebar variant="inset">
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
