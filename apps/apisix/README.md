@@ -30,6 +30,10 @@ curl -i http://localhost:9080/api/location
 
 `pass_host: node` matters: Vercel routes by Host header, so the upstream's own host must be sent, not the gateway's. The host is given without scheme (e.g. `my-project.vercel.app`).
 
+## Plugins
+
+Only the plugins listed under `plugins:` in `config.yaml` are loaded, to keep CPU and memory low. To use another plugin, add it to that list and redeploy; a route that references an unlisted plugin breaks.
+
 ## Deploy (Railway)
 
 Do these in order. Deploying the gateway before etcd is up, or before seeding, takes `/api/location` down.

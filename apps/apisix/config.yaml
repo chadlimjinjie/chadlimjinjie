@@ -1,6 +1,20 @@
 apisix:
   # Railway/Render inject PORT; 9080 for local runs
   node_listen: ${{PORT:=9080}}
+nginx_config:
+  # "auto" counts host cores, not the container limit; one worker is enough for this traffic
+  worker_processes: 1
+# Replaces the whole default list: only these can be attached to routes
+plugins:
+  - real-ip
+  - cors
+  - ip-restriction
+  - key-auth
+  - limit-count
+  - redirect
+  - proxy-rewrite
+# No TCP/UDP proxying here; the default stream "syslog" also fails to load without prometheus
+stream_plugins: []
 deployment:
   role: traditional
   role_traditional:
