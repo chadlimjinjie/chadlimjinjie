@@ -95,7 +95,27 @@ export const coins: Coin[] = [
       'https://d1htnxwo4o0jhw.cloudfront.net/cert/126180506/small/259256415.jpg',
     ],
   },
+  {
+    service: 'PCGS',
+    cert: '49208417',
+    name: '1766-Mo MF 8 R Calico-1090 Yon-M8-66',
+    grade: 'Genuine - XF Details (98 - Damage)',
+    images: [
+      'https://d1htnxwo4o0jhw.cloudfront.net/cert/154785074/small/rlk7LP0sKkmNsI9EcEitug.jpg',
+    ],
+  },
+  {
+    service: 'NGC',
+    cert: '6539363-063',
+    name: '2021Mo Mexico Silver 1/20O',
+    grade: 'MS 69',
+    images: [
+      'https://ccg-imaging-ngc-coins-production.s3.amazonaws.com/bd7821b2-7fba-44ef-a50c-9e7511b451dc/NGC6539363-063_OBV@200x280.jpg',
+      'https://ccg-imaging-ngc-coins-production.s3.amazonaws.com/bd7821b2-7fba-44ef-a50c-9e7511b451dc/NGC6539363-063_REV@200x280.jpg'
+    ],
+  },
 ]
+
 
 export function certUrl({ service, cert, grade }: Coin): string {
   switch (service) {
