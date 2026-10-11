@@ -150,7 +150,7 @@ export function useConnectFour(mode: ConnectFourMode, name: string) {
       dispatch({ kind: "connection", value: "connecting" })
       let url: string
       try {
-        url = buildWsUrl("/ws")
+        url = buildWsUrl("/connect-four/ws")
       } catch {
         if (!cancelled) scheduleReconnect()
         return

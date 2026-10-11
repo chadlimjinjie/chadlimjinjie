@@ -23,7 +23,7 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/healthz", handleHealth)
-	mux.Handle("/ws", wsHandler)
+	mux.Handle("/connect-four/ws", wsHandler)
 
 	port := getenv("PORT", "4110")
 	log.Printf("connect-four-service listening on :%s", port)

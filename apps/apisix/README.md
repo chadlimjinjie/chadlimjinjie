@@ -45,7 +45,7 @@ curl -i http://localhost:9080/api/location
 ```sh
 # hosts: host.docker.internal locally, <service>.railway.internal on Railway
 curl -X PUT "$ADMIN_URL/apisix/admin/routes/connect_four_ws" -H "X-API-KEY: $ADMIN_KEY" -d '{
-  "uri": "/ws",
+  "uri": "/connect-four/ws",
   "enable_websocket": true,
   "upstream": {
     "type": "roundrobin", "timeout": { "connect": 6, "send": 3600, "read": 3600 },

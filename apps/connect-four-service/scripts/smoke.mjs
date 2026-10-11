@@ -1,6 +1,6 @@
 // Smoke test: drives the connect-four-service over real WebSocket connections.
 // Run the service on :4110 first, then: node scripts/smoke.mjs
-const BASE = process.env.WS || "ws://localhost:4110/ws"
+const BASE = process.env.WS || "ws://localhost:4110/connect-four/ws"
 
 function client(pid) {
   const ws = new WebSocket(`${BASE}?pid=${pid}`)
