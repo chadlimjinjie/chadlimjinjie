@@ -62,7 +62,7 @@ curl -X PUT "$ADMIN_URL/apisix/admin/routes/sudoku_ws" -H "X-API-KEY: $ADMIN_KEY
 }'
 ```
 
-`enable_websocket` is a route attribute, not a plugin, so nothing is added to `plugins:`. The hour-long timeouts stop APISIX from closing an idle game socket after its default 60 s. The web app reaches both through `VITE_GATEWAY_URL`.
+`enable_websocket` is a route attribute, not a plugin, so nothing is added to `plugins:`. The hour-long timeouts stop APISIX from closing an idle game socket after its default 60 s. The web app reaches both through `VITE_API_URL`.
 
 ## Plugins
 
