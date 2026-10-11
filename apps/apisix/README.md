@@ -8,8 +8,9 @@ APISIX gateway in traditional mode: routes live in etcd and are managed at runti
 
 ```sh
 # optional: LOCATION_HOST=<project>.vercel.app in a root .env enables /api/location
-docker compose up --build
 pnpm dev
+# Ctrl+C stops the web app only; stop the backend with:
+docker compose down
 ```
 
 - Gateway: http://localhost:9080
