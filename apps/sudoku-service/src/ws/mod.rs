@@ -1,5 +1,5 @@
 //! Bridges WebSocket connections to rooms. Each connection resolves an identity
-//! once (from `?token=`/`?pid=`), then runs a read loop that dispatches inbound
+//! once (from `?pid=`), then runs a read loop that dispatches inbound
 //! protocol messages and a write task that drains queued outbound messages and
 //! sends keepalive pings. Ported from
 //! `connect-four-service/internal/ws/handler.go`.
@@ -15,7 +15,6 @@ use futures_util::{SinkExt, StreamExt};
 use serde::Deserialize;
 use tokio::sync::{mpsc, watch};
 
-use crate::auth;
 use crate::game::Difficulty;
 use crate::protocol::{Identity, Inbound, Outbound};
 use crate::room::{Manager, Player, RoomHandle};
@@ -27,7 +26,6 @@ const MAX_NAME_LEN: usize = 24;
 
 #[derive(Deserialize)]
 pub struct ConnectParams {
-    token: Option<String>,
     pid: Option<String>,
 }
 
@@ -38,30 +36,11 @@ pub async fn handler(
     Query(q): Query<ConnectParams>,
     State(mgr): State<Arc<Manager>>,
 ) -> impl IntoResponse {
-    let identity = match resolve_identity(q.token.as_deref(), q.pid.as_deref()) {
-        Some(id) => id,
+    let identity = match q.pid.filter(|p| !p.is_empty()) {
+        Some(id) => Identity { kind: "anon".into(), id },
         None => return (StatusCode::BAD_REQUEST, "missing player identity").into_response(),
     };
     ws.on_upgrade(move |socket| client_loop(socket, identity, mgr))
-}
-
-/// A valid JWT (passed as `?token=` since browsers can't set WS headers) yields
-/// an account identity; otherwise the ephemeral `?pid=` is the anon identity.
-fn resolve_identity(token: Option<&str>, pid: Option<&str>) -> Option<Identity> {
-    if let Some(t) = token {
-        if !t.is_empty() {
-            match auth::verify_token(t) {
-                Ok(user) => return Some(Identity { kind: "user".into(), id: user.id }),
-                Err(_) => tracing::warn!("sudoku: rejected token, falling back to anon"),
-            }
-        }
-    }
-    if let Some(p) = pid {
-        if !p.is_empty() {
-            return Some(Identity { kind: "anon".into(), id: p.to_string() });
-        }
-    }
-    None
 }
 
 async fn client_loop(socket: WebSocket, identity: Identity, mgr: Arc<Manager>) {

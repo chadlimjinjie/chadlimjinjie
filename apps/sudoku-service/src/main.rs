@@ -4,7 +4,6 @@
 //! frontends reach it through the APISIX gateway. Mirrors the shape of
 //! connect-four-service, ported to Rust + axum.
 
-mod auth;
 mod game;
 mod protocol;
 mod room;
@@ -20,10 +19,6 @@ async fn main() {
     tracing_subscriber::fmt()
         .with_env_filter(EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info")))
         .init();
-
-    let auth_url =
-        std::env::var("AUTH_SERVICE_URL").unwrap_or_else(|_| "http://localhost:3100".to_string());
-    auth::init(&auth_url);
 
     let mgr = room::Manager::new();
 

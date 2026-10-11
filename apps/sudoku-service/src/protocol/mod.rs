@@ -12,8 +12,8 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-/// Resolved player identity. `kind` is "anon" (ephemeral localStorage uuid) or
-/// "user" (verified JWT subject). Reconnection and seating key off this value.
+/// Resolved player identity. `kind` is always "anon" (ephemeral localStorage
+/// uuid). Reconnection and seating key off this value.
 #[derive(Serialize, Clone, Debug, PartialEq, Eq)]
 pub struct Identity {
     pub kind: String,

@@ -22,11 +22,9 @@ type Inbound struct {
 	Column int    `json:"column,omitempty"`
 }
 
-// Identity is the resolved player identity. Kind is "anon" for ephemeral
-// players (keyed by a localStorage uuid) or "user" for authenticated accounts
-// (keyed by the verified JWT subject). Everything downstream — seats,
-// reconnection — keys off this value, so promoting an anon player to a real
-// account later only changes what fills this struct.
+// Identity is the resolved player identity. Kind is always "anon": an
+// ephemeral player keyed by a localStorage uuid. Everything downstream —
+// seats, reconnection — keys off this value.
 type Identity struct {
 	Kind string `json:"kind"`
 	ID   string `json:"id"`

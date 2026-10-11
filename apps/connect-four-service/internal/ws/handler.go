@@ -12,7 +12,6 @@ import (
 
 	"github.com/gorilla/websocket"
 
-	"github.com/midtone/connect-four-service/internal/auth"
 	"github.com/midtone/connect-four-service/internal/protocol"
 	"github.com/midtone/connect-four-service/internal/room"
 )
@@ -33,7 +32,7 @@ type Handler struct {
 
 // NewHandler builds a handler that accepts WebSocket upgrades from any origin.
 // The endpoint carries no ambient (cookie/session) credentials — identity is an
-// explicit ?pid=/?token= query param — so cross-site WS hijacking is not a
+// explicit ?pid= query param — so cross-site WS hijacking is not a
 // concern and origin checking is intentionally disabled.
 func NewHandler(mgr *room.Manager) *Handler {
 	return &Handler{
@@ -47,15 +46,13 @@ func NewHandler(mgr *room.Manager) *Handler {
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	// Identity is resolved once, at the connection level. A valid JWT (passed
-	// as ?token= since browsers can't set WS headers) yields an account
-	// identity; otherwise the ephemeral ?pid= is the anonymous identity.
-	q := r.URL.Query()
-	identity, ok := resolveIdentity(q.Get("token"), q.Get("pid"))
-	if !ok {
+	// Identity is resolved once, at the connection level: the ephemeral ?pid=.
+	pid := r.URL.Query().Get("pid")
+	if pid == "" {
 		http.Error(w, "missing player identity", http.StatusBadRequest)
 		return
 	}
+	identity := protocol.Identity{Kind: "anon", ID: pid}
 
 	conn, err := h.upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -71,19 +68,6 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	go c.writePump()
 	go c.readPump()
-}
-
-func resolveIdentity(token, pid string) (protocol.Identity, bool) {
-	if token != "" {
-		if user, err := auth.VerifyToken(token); err == nil {
-			return protocol.Identity{Kind: "user", ID: user.ID}, true
-		}
-		log.Printf("connect-four: rejected token, falling back to anon")
-	}
-	if pid != "" {
-		return protocol.Identity{Kind: "anon", ID: pid}, true
-	}
-	return protocol.Identity{}, false
 }
 
 // Client is one WebSocket connection. It satisfies room.Player.

@@ -8,15 +8,12 @@ import (
 
 	"github.com/joho/godotenv"
 
-	"github.com/midtone/connect-four-service/internal/auth"
 	"github.com/midtone/connect-four-service/internal/room"
 	"github.com/midtone/connect-four-service/internal/ws"
 )
 
 func main() {
 	_ = godotenv.Load()
-
-	auth.Init(getenv("AUTH_SERVICE_URL", "http://localhost:3100"))
 
 	mgr := room.NewManager()
 	wsHandler := ws.NewHandler(mgr)
