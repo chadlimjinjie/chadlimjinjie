@@ -25,6 +25,31 @@ services:
   sudoku:
     build: apps/sudoku-service
 
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      # not published to the host: only reachable from this compose network
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: auth
+    volumes: [postgres-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: [CMD, pg_isready, -U, postgres, -d, auth]
+      interval: 2s
+      retries: 15
+
+  auth:
+    build: apps/auth-service
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres/auth
+      PUBLIC_URL: ${AUTH_PUBLIC_URL:-http://localhost:9080}
+      CONSOLE_URL: ${AUTH_CONSOLE_URL:-http://localhost:5174}
+      ADMIN_EMAIL: ${AUTH_ADMIN_EMAIL:-admin@localhost}
+      # unset: a random password is generated on first start and logged once.
+      # set: the operator is given this password on every start
+      ADMIN_PASSWORD: ${AUTH_ADMIN_PASSWORD:-}
+    depends_on:
+      postgres: { condition: service_healthy }
+
   # Routes live in etcd, not git: PUT them on every up (idempotent)
   seed:
     image: curlimages/curl:8.11.1
@@ -39,6 +64,10 @@ services:
         ws() { put "$$1" "{\"uri\":\"$$2\",\"enable_websocket\":true,\"upstream\":{\"type\":\"roundrobin\",\"timeout\":{\"connect\":6,\"send\":3600,\"read\":3600},\"nodes\":[{\"host\":\"$$3\",\"port\":$$4,\"weight\":1}]}}"; }
         ws connect_four_ws /connect-four/ws connect-four 4110
         ws sudoku_ws /sudoku/ws sudoku 4111
+        auth='"upstream":{"type":"roundrobin","nodes":[{"host":"auth","port":4112,"weight":1}]}'
+        put auth "{\"uri\":\"/auth/*\",$$auth}"
+        # credential endpoints: 20 attempts a minute per client address
+        put auth_throttle "{\"uri\":\"/auth/*\",\"methods\":[\"POST\"],\"priority\":10,\"vars\":[[\"uri\",\"~~\",\"^/auth/t/[^/]+/(sign-in|sign-up|forgot-password|reset-password|token)\$$\"]],\"plugins\":{\"limit-count\":{\"count\":20,\"time_window\":60,\"key_type\":\"var\",\"key\":\"remote_addr\",\"rejected_code\":429}},$$auth}"
         if [ -n "$$LOCATION_HOST" ]; then
           put location "{\"uri\":\"/api/location\",\"upstream\":{\"type\":\"roundrobin\",\"scheme\":\"https\",\"pass_host\":\"node\",\"nodes\":[{\"host\":\"$$LOCATION_HOST\",\"port\":443,\"weight\":1}]}}"
         else
@@ -47,3 +76,4 @@ services:
 
 volumes:
   etcd-data:
+  postgres-data:
