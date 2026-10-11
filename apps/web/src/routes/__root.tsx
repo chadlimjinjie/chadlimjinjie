@@ -41,6 +41,12 @@ function Root() {
         <Link to="/coins" className="[&.active]:font-semibold">
           Coins
         </Link>
+        <Link to="/sudoku" className="[&.active]:font-semibold">
+          Sudoku
+        </Link>
+        <Link to="/connect-four" className="[&.active]:font-semibold">
+          Connect Four
+        </Link>
         <ThemeToggle />
       </nav>
       <main className="flex-1 p-4">

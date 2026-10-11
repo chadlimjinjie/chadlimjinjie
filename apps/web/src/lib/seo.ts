@@ -12,4 +12,12 @@ export const pages: Record<string, { title: string; description: string }> = {
     title: `Coins | ${SITE}`,
     description: 'PCGS, NGC and ANACS graded coins collected by Chad Lim.',
   },
+  '/sudoku': {
+    title: `Sudoku Duel | ${SITE}`,
+    description: 'Race a friend on the same Sudoku puzzle in real time, no account needed.',
+  },
+  '/connect-four': {
+    title: `Connect Four | ${SITE}`,
+    description: 'Play 1v1 Connect Four in real time, no account needed.',
+  },
 }

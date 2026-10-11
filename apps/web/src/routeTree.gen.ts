@@ -13,6 +13,10 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as CoinsRouteImport } from './routes/coins'
 import { Route as LocationRouteImport } from './routes/location'
+import { Route as ConnectFourIndexRouteImport } from './routes/connect-four.index'
+import { Route as ConnectFourCodeRouteImport } from './routes/connect-four.$code'
+import { Route as SudokuIndexRouteImport } from './routes/sudoku.index'
+import { Route as SudokuCodeRouteImport } from './routes/sudoku.$code'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -34,18 +38,46 @@ const LocationRoute = LocationRouteImport.update({
   path: '/location',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ConnectFourIndexRoute = ConnectFourIndexRouteImport.update({
+  id: '/connect-four/',
+  path: '/connect-four/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConnectFourCodeRoute = ConnectFourCodeRouteImport.update({
+  id: '/connect-four/$code',
+  path: '/connect-four/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SudokuIndexRoute = SudokuIndexRouteImport.update({
+  id: '/sudoku/',
+  path: '/sudoku/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SudokuCodeRoute = SudokuCodeRouteImport.update({
+  id: '/sudoku/$code',
+  path: '/sudoku/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/coins': typeof CoinsRoute
   '/location': typeof LocationRoute
+  '/connect-four/$code': typeof ConnectFourCodeRoute
+  '/sudoku/$code': typeof SudokuCodeRoute
+  '/connect-four/': typeof ConnectFourIndexRoute
+  '/sudoku/': typeof SudokuIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/coins': typeof CoinsRoute
   '/location': typeof LocationRoute
+  '/connect-four/$code': typeof ConnectFourCodeRoute
+  '/sudoku/$code': typeof SudokuCodeRoute
+  '/connect-four': typeof ConnectFourIndexRoute
+  '/sudoku': typeof SudokuIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +85,42 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/coins': typeof CoinsRoute
   '/location': typeof LocationRoute
+  '/connect-four/$code': typeof ConnectFourCodeRoute
+  '/sudoku/$code': typeof SudokuCodeRoute
+  '/connect-four/': typeof ConnectFourIndexRoute
+  '/sudoku/': typeof SudokuIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/coins' | '/location'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/coins'
+    | '/location'
+    | '/connect-four/$code'
+    | '/sudoku/$code'
+    | '/connect-four/'
+    | '/sudoku/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/coins' | '/location'
-  id: '__root__' | '/' | '/about' | '/coins' | '/location'
+  to:
+    | '/'
+    | '/about'
+    | '/coins'
+    | '/location'
+    | '/connect-four/$code'
+    | '/sudoku/$code'
+    | '/connect-four'
+    | '/sudoku'
+  id:
+    | '__root__'
+    | '/'
+    | '/about'
+    | '/coins'
+    | '/location'
+    | '/connect-four/$code'
+    | '/sudoku/$code'
+    | '/connect-four/'
+    | '/sudoku/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -67,6 +128,10 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   CoinsRoute: typeof CoinsRoute
   LocationRoute: typeof LocationRoute
+  ConnectFourCodeRoute: typeof ConnectFourCodeRoute
+  SudokuCodeRoute: typeof SudokuCodeRoute
+  ConnectFourIndexRoute: typeof ConnectFourIndexRoute
+  SudokuIndexRoute: typeof SudokuIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -99,6 +164,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LocationRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/connect-four/': {
+      id: '/connect-four/'
+      path: '/connect-four'
+      fullPath: '/connect-four/'
+      preLoaderRoute: typeof ConnectFourIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/connect-four/$code': {
+      id: '/connect-four/$code'
+      path: '/connect-four/$code'
+      fullPath: '/connect-four/$code'
+      preLoaderRoute: typeof ConnectFourCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sudoku/': {
+      id: '/sudoku/'
+      path: '/sudoku'
+      fullPath: '/sudoku/'
+      preLoaderRoute: typeof SudokuIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sudoku/$code': {
+      id: '/sudoku/$code'
+      path: '/sudoku/$code'
+      fullPath: '/sudoku/$code'
+      preLoaderRoute: typeof SudokuCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -107,6 +200,10 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   CoinsRoute: CoinsRoute,
   LocationRoute: LocationRoute,
+  ConnectFourCodeRoute: ConnectFourCodeRoute,
+  SudokuCodeRoute: SudokuCodeRoute,
+  ConnectFourIndexRoute: ConnectFourIndexRoute,
+  SudokuIndexRoute: SudokuIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
