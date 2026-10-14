@@ -123,20 +123,24 @@ async fn callback(
     Query(q): Query<Callback>,
     headers: HeaderMap,
 ) -> Result<Response> {
-    let failed = |why: &str| Ok(pages::message(&tenant, "Sign in", None, Some(why), true));
+    // (code for the login UI, text for the hosted page)
+    let failed = |(code, why): (&str, &str)| {
+        Ok(pages::ui(&tenant, "sign-in", &[("error", Some(code))])
+            .unwrap_or_else(|| pages::message(&tenant, "Sign in", None, Some(why), true)))
+    };
     let p = provider(&path.provider).ok_or(AppError::NotFound)?;
     let (client_id, client_secret) = connector(&st.db, tenant.id, &path.provider).await?;
 
-    let (Some(code), Some(state)) = (q.code, q.state) else { return failed("Sign-in was cancelled.") };
+    let (Some(code), Some(state)) = (q.code, q.state) else { return failed(("social_cancelled", "Sign-in was cancelled.")) };
     if identity::cookie(&headers, STATE_COOKIE) != Some(state.as_str()) {
-        return failed("Sign-in session expired. Please try again.");
+        return failed(("social_expired", "Sign-in session expired. Please try again."));
     }
 
     let profile = match fetch_profile(&path.provider, &p, &client_id, &client_secret, &code, &callback_url(&st, &tenant, &path.provider)).await {
         Ok(profile) => profile,
         Err(e) => {
             tracing::warn!("{} sign-in failed: {e}", path.provider);
-            return failed("The provider did not complete the sign-in.");
+            return failed(("social_failed", "The provider did not complete the sign-in."));
         }
     };
     let user = match link_or_create(&st.db, &tenant, &path.provider, profile).await? {
@@ -206,15 +210,15 @@ async fn fetch_profile(
     })
 }
 
-/// Maps a provider identity to a local user. The inner error is a message for the person signing in.
+/// Maps a provider identity to a local user. The inner error is (code, message) for the person signing in.
 pub async fn link_or_create(
     db: &PgPool,
     tenant: &Tenant,
     provider: &str,
     profile: Profile,
-) -> Result<std::result::Result<User, &'static str>> {
+) -> Result<std::result::Result<User, (&'static str, &'static str)>> {
     if profile.id.is_empty() {
-        return Ok(Err("The provider did not return an account."));
+        return Ok(Err(("social_failed", "The provider did not return an account.")));
     }
     let linked: Option<User> = sqlx::query_as(
         "select u.* from account a join app_user u on u.id = a.user_id
@@ -231,7 +235,7 @@ pub async fn link_or_create(
         None => {
             // Accounts are matched by email, so an address the provider has not verified links nothing.
             let Some(email) = profile.email.as_deref().and_then(identity::normalize_email) else {
-                return Ok(Err("Your account with this provider has no verified email address."));
+                return Ok(Err(("social_unverified", "Your account with this provider has no verified email address.")));
             };
             let existing: Option<User> = sqlx::query_as("select * from app_user where tenant_id = $1 and email = $2")
                 .bind(tenant.id)
@@ -257,7 +261,7 @@ pub async fn link_or_create(
                         .fetch_one(db)
                         .await?
                 }
-                None => return Ok(Err("No account exists for this email address.")),
+                None => return Ok(Err(("no_account", "No account exists for this email address."))),
             };
             sqlx::query("insert into account (tenant_id, user_id, provider, provider_account_id) values ($1, $2, $3, $4)")
                 .bind(tenant.id)
@@ -270,7 +274,7 @@ pub async fn link_or_create(
         }
     };
     if user.suspended {
-        return Ok(Err("This account is suspended."));
+        return Ok(Err(("suspended", "This account is suspended.")));
     }
     Ok(Ok(user))
 }

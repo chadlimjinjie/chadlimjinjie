@@ -13,6 +13,7 @@ export const Tenant = z.object({
     session_ttl_days: z.number(),
     access_token_ttl_secs: z.number(),
     refresh_token_ttl_days: z.number(),
+    login_ui_url: z.string().nullish(),
   }),
 })
 

@@ -64,6 +64,22 @@ pub fn router() -> Router<AppState> {
         .route("/token", post(token))
         .route("/userinfo", get(userinfo).post(userinfo))
         .route("/end-session", get(end_session))
+        .route("/login-options", get(login_options))
+}
+
+/// What a tenant's own login UI needs to draw its forms.
+async fn login_options(State(st): State<AppState>, tenant: Tenant) -> Result<Json<Value>> {
+    let socials: Vec<String> =
+        sqlx::query_scalar("select provider from social_connector where tenant_id = $1 and enabled order by provider")
+            .bind(tenant.id)
+            .fetch_all(&st.db)
+            .await?;
+    Ok(Json(json!({
+        "name": tenant.name,
+        "sign_up_enabled": tenant.config.sign_up_enabled,
+        "password_min_length": tenant.config.password_min_length,
+        "socials": socials,
+    })))
 }
 
 async fn discovery(State(st): State<AppState>, tenant: Tenant) -> Json<Value> {

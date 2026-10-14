@@ -2,7 +2,7 @@
 
 use askama::Template;
 use axum::{
-    extract::{Query, Request, State},
+    extract::{FromRequestParts, Query, Request, State},
     http::{header, HeaderMap, HeaderValue, Method, StatusCode},
     middleware::{self, Next},
     response::{Html, IntoResponse, Redirect, Response},
@@ -10,6 +10,7 @@ use axum::{
     Form, Router,
 };
 use serde::Deserialize;
+use url::Url;
 use uuid::Uuid;
 
 use crate::{
@@ -73,6 +74,17 @@ pub fn with_return(path: String, return_to: Option<&str>) -> String {
     }
 }
 
+/// A tenant with its own login UI shows every page there instead: `{login_ui_url}/{page}?{params}`.
+/// Only codes cross over, never text, so a crafted link cannot put words on that UI.
+pub fn ui(tenant: &Tenant, page: &str, params: &[(&str, Option<&str>)]) -> Option<Response> {
+    let mut url = Url::parse(&format!("{}/{page}", tenant.config.login_ui_url.as_deref()?)).ok()?;
+    let pairs: Vec<_> = params.iter().filter_map(|(k, v)| v.map(|v| (*k, v))).collect();
+    if !pairs.is_empty() {
+        url.query_pairs_mut().extend_pairs(pairs);
+    }
+    Some(Redirect::to(url.as_str()).into_response())
+}
+
 pub fn router(state: AppState) -> Router<AppState> {
     Router::new()
         .route("/sign-in", get(sign_in_form).post(sign_in))
@@ -84,13 +96,21 @@ pub fn router(state: AppState) -> Router<AppState> {
         .layer(middleware::from_fn_with_state(state, guard))
 }
 
-/// CSRF defence for the cookie-authenticated forms: a POST must carry our own Origin, which browsers
-/// always send on form posts and pages on other sites cannot forge. Also sets the page security headers.
+/// CSRF defence for the cookie-authenticated forms: a POST must carry our own Origin, or the tenant's
+/// login UI origin, which browsers always send on form posts and pages on other sites cannot forge.
+/// Also sets the page security headers.
 async fn guard(State(st): State<AppState>, req: Request, next: Next) -> Response {
-    let origin = req.headers().get(header::ORIGIN).and_then(|v| v.to_str().ok());
-    if req.method() == Method::POST && origin != Some(st.cfg.public_url.as_str()) {
-        return (StatusCode::FORBIDDEN, "cross-origin request rejected").into_response();
-    }
+    let origin = req.headers().get(header::ORIGIN).and_then(|v| v.to_str().ok()).map(str::to_string);
+    let req = if req.method() == Method::POST && origin.as_deref() != Some(st.cfg.public_url.as_str()) {
+        let (mut parts, body) = req.into_parts();
+        let login_ui = Tenant::from_request_parts(&mut parts, &st).await.ok().and_then(|t| t.config.0.login_ui_url);
+        if origin.is_none() || origin != login_ui {
+            return (StatusCode::FORBIDDEN, "cross-origin request rejected").into_response();
+        }
+        Request::from_parts(parts, body)
+    } else {
+        req
+    };
     let mut res = next.run(req).await;
     let headers = res.headers_mut();
     headers.insert(header::CACHE_CONTROL, HeaderValue::from_static("no-store"));
@@ -105,6 +125,9 @@ async fn guard(State(st): State<AppState>, req: Request, next: Next) -> Response
 
 async fn sign_in_page(st: &AppState, tenant: &Tenant, q: &ReturnTo, error: Option<&str>) -> Result<Response> {
     let return_to = q.safe(tenant);
+    if let Some(r) = ui(tenant, "sign-in", &[("error", error.map(|_| "invalid_credentials")), ("return_to", return_to)]) {
+        return Ok(r);
+    }
     let base = tenant.base();
     let providers: Vec<String> =
         sqlx::query_scalar("select provider from social_connector where tenant_id = $1 and enabled order by provider")
@@ -153,7 +176,8 @@ pub async fn signed_in(st: &AppState, tenant: &Tenant, user_id: Uuid, headers: &
     let cookie = identity::create_session(&st.db, &st.cfg, tenant, user_id, headers).await?;
     let mut res = match return_to {
         Some(r) => Redirect::to(r).into_response(),
-        None => message(tenant, "Signed in", Some("You are signed in. You can return to the application."), None, false),
+        None => ui(tenant, "", &[])
+            .unwrap_or_else(|| message(tenant, "Signed in", Some("You are signed in. You can return to the application."), None, false)),
     };
     res.headers_mut().append(header::SET_COOKIE, cookie);
     Ok(res)
@@ -166,7 +190,13 @@ pub fn message(tenant: &Tenant, title: &str, notice: Option<&str>, error: Option
     Page { tenant: &tenant.name, title, notice, error, links, ..Default::default() }.respond(status)
 }
 
-fn sign_up_page(tenant: &Tenant, q: &ReturnTo, error: Option<&str>) -> Response {
+/// `error` is (code for the login UI, text for the hosted page).
+fn sign_up_page(tenant: &Tenant, q: &ReturnTo, error: Option<(&str, &str)>) -> Response {
+    let code = if tenant.config.sign_up_enabled { error.map(|e| e.0) } else { Some("signup_disabled") };
+    if let Some(r) = ui(tenant, "sign-up", &[("error", code), ("return_to", q.safe(tenant))]) {
+        return r;
+    }
+    let error = error.map(|e| e.1);
     if !tenant.config.sign_up_enabled {
         return message(tenant, "Sign up", None, Some("Sign-up is disabled for this tenant."), true);
     }
@@ -192,10 +222,10 @@ async fn sign_up(State(st): State<AppState>, tenant: Tenant, Query(q): Query<Ret
         return Ok(sign_up_page(&tenant, &q, None));
     }
     let Some(email) = identity::normalize_email(&f.email) else {
-        return Ok(sign_up_page(&tenant, &q, Some("Enter a valid email address.")));
+        return Ok(sign_up_page(&tenant, &q, Some(("invalid_email", "Enter a valid email address."))));
     };
     if let Err(AppError::BadRequest(msg)) = identity::check_password(&tenant, &f.password) {
-        return Ok(sign_up_page(&tenant, &q, Some(&msg)));
+        return Ok(sign_up_page(&tenant, &q, Some(("weak_password", msg.as_str()))));
     }
     let hash = identity::hash_password(f.password).await?;
     let created: Option<Uuid> = sqlx::query_scalar(
@@ -215,7 +245,9 @@ async fn sign_up(State(st): State<AppState>, tenant: Tenant, Query(q): Query<Ret
         tokio::spawn(async move { mail::send(&cfg, &email, &subject, &format!("Confirm your email address:\n\n{link}\n")).await });
     }
     // same answer whether or not the address was already registered
-    Ok(message(&tenant, "Check your email", Some("If that address is new, we sent a verification link. You can sign in now."), None, true))
+    Ok(ui(&tenant, "sign-in", &[("notice", Some("check_email")), ("return_to", q.safe(&tenant))]).unwrap_or_else(|| {
+        message(&tenant, "Check your email", Some("If that address is new, we sent a verification link. You can sign in now."), None, true)
+    }))
 }
 
 #[derive(Deserialize)]
@@ -226,13 +258,18 @@ struct Token {
 async fn verify_email(State(st): State<AppState>, tenant: Tenant, Query(q): Query<Token>) -> Result<Response> {
     let token = q.token.unwrap_or_default();
     let Some(user_id) = identity::consume_verification(&st.db, tenant.id, &token, "verify_email").await? else {
-        return Ok(message(&tenant, "Verify email", None, Some("This link is invalid or has expired."), true));
+        return Ok(ui(&tenant, "sign-in", &[("error", Some("link_expired"))])
+            .unwrap_or_else(|| message(&tenant, "Verify email", None, Some("This link is invalid or has expired."), true)));
     };
     sqlx::query("update app_user set email_verified = true where id = $1").bind(user_id).execute(&st.db).await?;
-    Ok(message(&tenant, "Email verified", Some("Your email address is verified."), None, true))
+    Ok(ui(&tenant, "sign-in", &[("notice", Some("email_verified"))])
+        .unwrap_or_else(|| message(&tenant, "Email verified", Some("Your email address is verified."), None, true)))
 }
 
 fn forgot_page(tenant: &Tenant, notice: Option<&str>) -> Response {
+    if let Some(r) = ui(tenant, "forgot-password", &[("notice", notice.map(|_| "reset_sent"))]) {
+        return r;
+    }
     let links = vec![(format!("{}/sign-in", tenant.base()), "Back to sign in")];
     Page { tenant: &tenant.name, title: "Reset password", notice, fields: &[EMAIL], submit: Some("Send reset link"), links, ..Default::default() }
         .respond(StatusCode::OK)
@@ -257,7 +294,8 @@ async fn forgot(State(st): State<AppState>, tenant: Tenant, Form(f): Form<Email>
                 .await?;
         if let Some(user_id) = user_id {
             let token = identity::create_verification(&st.db, tenant.id, user_id, "reset_password", 1).await?;
-            let link = format!("{}/reset-password?token={token}", tenant.issuer(&st.cfg));
+            let base = tenant.config.login_ui_url.clone().unwrap_or_else(|| tenant.issuer(&st.cfg));
+            let link = format!("{base}/reset-password?token={token}");
             let (cfg, subject) = (st.cfg.clone(), format!("Reset your password for {}", tenant.name));
             // spawned so the response time does not reveal whether the account exists
             tokio::spawn(async move {
@@ -268,14 +306,17 @@ async fn forgot(State(st): State<AppState>, tenant: Tenant, Form(f): Form<Email>
     Ok(forgot_page(&tenant, Some("If an account exists for that address, a reset link is on its way.")))
 }
 
-fn reset_page(tenant: &Tenant, error: Option<&str>) -> Response {
+fn reset_page(tenant: &Tenant, token: Option<&str>, error: Option<&str>) -> Response {
+    if let Some(r) = ui(tenant, "reset-password", &[("token", token), ("error", error.map(|_| "weak_password"))]) {
+        return r;
+    }
     let status = if error.is_some() { StatusCode::BAD_REQUEST } else { StatusCode::OK };
     Page { tenant: &tenant.name, title: "Choose a new password", error, fields: &[NEW_PASSWORD], submit: Some("Update password"), ..Default::default() }
         .respond(status)
 }
 
-async fn reset_form(tenant: Tenant) -> Response {
-    reset_page(&tenant, None)
+async fn reset_form(tenant: Tenant, Query(q): Query<Token>) -> Response {
+    reset_page(&tenant, q.token.as_deref(), None)
 }
 
 #[derive(Deserialize)]
@@ -286,11 +327,12 @@ struct NewPassword {
 async fn reset(State(st): State<AppState>, tenant: Tenant, Query(q): Query<Token>, Form(f): Form<NewPassword>) -> Result<Response> {
     // checked before the token is consumed, so a rejected password does not burn the link
     if let Err(AppError::BadRequest(msg)) = identity::check_password(&tenant, &f.password) {
-        return Ok(reset_page(&tenant, Some(&msg)));
+        return Ok(reset_page(&tenant, q.token.as_deref(), Some(&msg)));
     }
     let token = q.token.unwrap_or_default();
     let Some(user_id) = identity::consume_verification(&st.db, tenant.id, &token, "reset_password").await? else {
-        return Ok(message(&tenant, "Reset password", None, Some("This link is invalid or has expired."), true));
+        return Ok(ui(&tenant, "forgot-password", &[("error", Some("link_expired"))])
+            .unwrap_or_else(|| message(&tenant, "Reset password", None, Some("This link is invalid or has expired."), true)));
     };
     let hash = identity::hash_password(f.password).await?;
     // the link proved control of the mailbox, so the address counts as verified
@@ -300,5 +342,7 @@ async fn reset(State(st): State<AppState>, tenant: Tenant, Query(q): Query<Token
         .execute(&st.db)
         .await?;
     identity::revoke_user(&st.db, user_id).await?;
-    Ok(message(&tenant, "Password updated", Some("Your password was changed and all other sessions were signed out."), None, true))
+    Ok(ui(&tenant, "sign-in", &[("notice", Some("password_updated"))]).unwrap_or_else(|| {
+        message(&tenant, "Password updated", Some("Your password was changed and all other sessions were signed out."), None, true)
+    }))
 }
