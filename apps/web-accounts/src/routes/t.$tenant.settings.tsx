@@ -37,7 +37,6 @@ function SettingsPage() {
                     session_ttl_days: Number(d.get('session_ttl_days')),
                     access_token_ttl_secs: Number(d.get('access_token_ttl_secs')),
                     refresh_token_ttl_days: Number(d.get('refresh_token_ttl_days')),
-                    login_ui_url: String(d.get('login_ui_url') ?? '').trim() || null,
                   },
                 })
               }
@@ -53,14 +52,6 @@ function SettingsPage() {
                 <Field label="Access token lifetime (seconds)" name="access_token_ttl_secs" type="number" min={60} max={86400} defaultValue={t.config.access_token_ttl_secs} required />
                 <Field label="Refresh token lifetime (days)" name="refresh_token_ttl_days" type="number" min={1} max={365} defaultValue={t.config.refresh_token_ttl_days} required />
               </div>
-              <Field
-                label="Custom login UI origin"
-                name="login_ui_url"
-                type="url"
-                placeholder="https://app.example.com"
-                defaultValue={t.config.login_ui_url ?? ''}
-                hint="Optional. The hosted sign-in pages redirect here and accept its form posts. Origin only, no path."
-              />
             </Form>
           </Section>
 

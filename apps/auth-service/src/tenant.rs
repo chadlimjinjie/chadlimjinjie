@@ -22,8 +22,6 @@ pub struct TenantConfig {
     pub session_ttl_days: i64,
     pub access_token_ttl_secs: i64,
     pub refresh_token_ttl_days: i64,
-    /// Origin of the tenant's own sign-in UI. When set, the hosted pages redirect there.
-    pub login_ui_url: Option<String>,
 }
 
 impl Default for TenantConfig {
@@ -34,7 +32,6 @@ impl Default for TenantConfig {
             session_ttl_days: 14,
             access_token_ttl_secs: 3600,
             refresh_token_ttl_days: 14,
-            login_ui_url: None,
         }
     }
 }
@@ -44,11 +41,7 @@ impl TenantConfig {
         let ok = (8..=128).contains(&self.password_min_length)
             && (1..=365).contains(&self.session_ttl_days)
             && (60..=86_400).contains(&self.access_token_ttl_secs)
-            && (1..=365).contains(&self.refresh_token_ttl_days)
-            // a bare http(s) origin, since its POSTs pass the CSRF check by exact Origin match
-            && self.login_ui_url.as_deref().is_none_or(|u| {
-                url::Url::parse(u).is_ok_and(|p| matches!(p.scheme(), "http" | "https") && p.origin().ascii_serialization() == u)
-            });
+            && (1..=365).contains(&self.refresh_token_ttl_days);
         ok.then_some(()).ok_or_else(|| bad("config value out of range"))
     }
 }
