@@ -22,11 +22,6 @@ pub struct TenantConfig {
     pub session_ttl_days: i64,
     pub access_token_ttl_secs: i64,
     pub refresh_token_ttl_days: i64,
-    /// Origin of the tenant's own app, which proxies `/api/auth/*` to the session API. Mail links and
-    /// headless social sign-in go there instead of the hosted pages.
-    pub app_url: Option<String>,
-    /// Further browser origins (besides `app_url`) allowed to post to the session API.
-    pub allowed_origins: Vec<String>,
 }
 
 impl Default for TenantConfig {
@@ -37,8 +32,6 @@ impl Default for TenantConfig {
             session_ttl_days: 14,
             access_token_ttl_secs: 3600,
             refresh_token_ttl_days: 14,
-            app_url: None,
-            allowed_origins: Vec::new(),
         }
     }
 }
@@ -49,20 +42,8 @@ impl TenantConfig {
             && (1..=365).contains(&self.session_ttl_days)
             && (60..=86_400).contains(&self.access_token_ttl_secs)
             && (1..=365).contains(&self.refresh_token_ttl_days);
-        ok.then_some(()).ok_or_else(|| bad("config value out of range"))?;
-        let origins_ok = self.app_url.iter().chain(&self.allowed_origins).all(|o| is_origin(o));
-        origins_ok.then_some(()).ok_or_else(|| bad("app_url and allowed_origins must be origins like https://app.example.com"))
+        ok.then_some(()).ok_or_else(|| bad("config value out of range"))
     }
-
-    /// Origins whose pages may post to the session API.
-    pub fn session_origins(&self) -> impl Iterator<Item = &str> {
-        self.app_url.iter().chain(&self.allowed_origins).map(String::as_str)
-    }
-}
-
-/// Exactly `scheme://host[:port]`, nothing more, so it compares equal to a browser's Origin header.
-fn is_origin(s: &str) -> bool {
-    url::Url::parse(s).is_ok_and(|u| matches!(u.scheme(), "http" | "https") && u.origin().ascii_serialization() == s)
 }
 
 #[derive(Clone, Serialize, sqlx::FromRow)]

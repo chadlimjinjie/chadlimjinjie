@@ -1,8 +1,7 @@
 //! auth-service — multi-tenant OIDC identity provider.
 //!
 //! Each tenant lives under `/auth/t/{slug}` and serves hosted sign-in pages plus the OIDC
-//! endpoints, and `/auth/t/{slug}/session` is a JSON API for tenants with their own sign-in UI.
-//! `/auth/api` is the management API used by the web-accounts console. All frontends
+//! endpoints. `/auth/api` is the management API used by the web-accounts console. All frontends
 //! reach it through the APISIX gateway.
 
 mod admin;
@@ -12,7 +11,6 @@ mod keys;
 mod mail;
 mod oidc;
 mod pages;
-mod session_api;
 mod social;
 mod tenant;
 #[cfg(test)]
@@ -96,9 +94,7 @@ pub fn app(state: AppState) -> Router {
         .allow_methods(Any)
         .allow_headers([header::AUTHORIZATION, header::CONTENT_TYPE]);
 
-    let tenant = pages::router(state.clone())
-        .merge(oidc::router().layer(cors.clone()))
-        .nest("/session", session_api::router(state.clone()));
+    let tenant = pages::router(state.clone()).merge(oidc::router().layer(cors.clone()));
     Router::new()
         .route("/healthz", get(health))
         .nest("/auth/t/{tenant}", tenant)
