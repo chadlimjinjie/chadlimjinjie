@@ -1,8 +1,7 @@
 //! sudoku-service — real-time PvP Sudoku WebSocket game server.
 //!
-//! Routes: `GET /healthz` (JSON health) and `GET /sudoku/ws` (WebSocket). All
-//! frontends reach it through the APISIX gateway. Mirrors the shape of
-//! connect-four-service, ported to Rust + axum.
+//! Routes: `GET /healthz` (JSON health) and `GET /sudoku/ws` (WebSocket).
+//! Mirrors the shape of connect-four-service, ported to Rust + axum.
 
 mod game;
 mod protocol;
