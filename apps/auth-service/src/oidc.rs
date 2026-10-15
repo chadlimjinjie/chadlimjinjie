@@ -336,14 +336,7 @@ struct Grant {
 
 async fn issue_tokens(st: &AppState, tenant: &Tenant, client: &Client, user: &User, grant: Grant) -> Result<Value> {
     // Recomputed on every issue, so a role change takes effect at the next refresh.
-    let role_scopes: Vec<String> = sqlx::query_scalar(
-        "select distinct unnest(r.scopes) from role r join user_role ur on ur.role_id = r.id
-         where ur.user_id = $1 and r.tenant_id = $2",
-    )
-    .bind(user.id)
-    .bind(tenant.id)
-    .fetch_all(&st.db)
-    .await?;
+    let role_scopes: Vec<String> = identity::roles(&st.db, tenant.id, user.id).await?.into_iter().flat_map(|(_, s)| s).collect();
     let mut scopes: Vec<&str> = Vec::new();
     for s in grant.scope.split_whitespace() {
         if !scopes.contains(&s) && (OIDC_SCOPES.contains(&s) || role_scopes.iter().any(|r| r == s)) {
@@ -497,7 +490,7 @@ async fn end_session(
             .execute(&st.db)
             .await?;
     }
-    let cookie = identity::end_session(&st.db, &st.cfg, &tenant, &headers).await?;
+    let cookie = identity::end_session(&st.db, &st.cfg, &tenant, identity::Surface::Hosted, &headers).await?;
 
     // Only a URI registered on the identified client is followed.
     let target = p

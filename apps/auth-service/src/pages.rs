@@ -14,7 +14,7 @@ use uuid::Uuid;
 
 use crate::{
     error::{internal, AppError, Result},
-    identity, mail, social,
+    identity, social,
     tenant::Tenant,
     AppState,
 };
@@ -150,7 +150,7 @@ async fn sign_in(
 
 /// Starts the browser session, then continues the authorization request that sent the user here.
 pub async fn signed_in(st: &AppState, tenant: &Tenant, user_id: Uuid, headers: &HeaderMap, return_to: Option<&str>) -> Result<Response> {
-    let cookie = identity::create_session(&st.db, &st.cfg, tenant, user_id, headers).await?;
+    let cookie = identity::create_session(&st.db, &st.cfg, tenant, identity::Surface::Hosted, user_id, headers).await?;
     let mut res = match return_to {
         Some(r) => Redirect::to(r).into_response(),
         None => message(tenant, "Signed in", Some("You are signed in. You can return to the application."), None, false),
@@ -191,28 +191,9 @@ async fn sign_up(State(st): State<AppState>, tenant: Tenant, Query(q): Query<Ret
     if !tenant.config.sign_up_enabled {
         return Ok(sign_up_page(&tenant, &q, None));
     }
-    let Some(email) = identity::normalize_email(&f.email) else {
-        return Ok(sign_up_page(&tenant, &q, Some("Enter a valid email address.")));
-    };
-    if let Err(AppError::BadRequest(msg)) = identity::check_password(&tenant, &f.password) {
-        return Ok(sign_up_page(&tenant, &q, Some(&msg)));
-    }
-    let hash = identity::hash_password(f.password).await?;
-    let created: Option<Uuid> = sqlx::query_scalar(
-        "insert into app_user (tenant_id, email, name, password_hash) values ($1, $2, $3, $4)
-         on conflict (tenant_id, email) do nothing returning id",
-    )
-    .bind(tenant.id)
-    .bind(&email)
-    .bind(f.name.trim().chars().take(200).collect::<String>())
-    .bind(hash)
-    .fetch_optional(&st.db)
-    .await?;
-    if let Some(user_id) = created {
-        let token = identity::create_verification(&st.db, tenant.id, user_id, "verify_email", 48).await?;
-        let link = format!("{}/verify-email?token={token}", tenant.issuer(&st.cfg));
-        let (cfg, subject) = (st.cfg.clone(), format!("Verify your email for {}", tenant.name));
-        tokio::spawn(async move { mail::send(&cfg, &email, &subject, &format!("Confirm your email address:\n\n{link}\n")).await });
+    match identity::register(&st, &tenant, &f.name, &f.email, f.password).await {
+        Err(AppError::BadRequest(msg)) => return Ok(sign_up_page(&tenant, &q, Some(&msg))),
+        r => r?,
     }
     // same answer whether or not the address was already registered
     Ok(message(&tenant, "Check your email", Some("If that address is new, we sent a verification link. You can sign in now."), None, true))
@@ -224,11 +205,9 @@ struct Token {
 }
 
 async fn verify_email(State(st): State<AppState>, tenant: Tenant, Query(q): Query<Token>) -> Result<Response> {
-    let token = q.token.unwrap_or_default();
-    let Some(user_id) = identity::consume_verification(&st.db, tenant.id, &token, "verify_email").await? else {
+    if !identity::verify_email(&st, &tenant, &q.token.unwrap_or_default()).await? {
         return Ok(message(&tenant, "Verify email", None, Some("This link is invalid or has expired."), true));
-    };
-    sqlx::query("update app_user set email_verified = true where id = $1").bind(user_id).execute(&st.db).await?;
+    }
     Ok(message(&tenant, "Email verified", Some("Your email address is verified."), None, true))
 }
 
@@ -248,23 +227,7 @@ struct Email {
 }
 
 async fn forgot(State(st): State<AppState>, tenant: Tenant, Form(f): Form<Email>) -> Result<Response> {
-    if let Some(email) = identity::normalize_email(&f.email) {
-        let user_id: Option<Uuid> =
-            sqlx::query_scalar("select id from app_user where tenant_id = $1 and email = $2 and not suspended")
-                .bind(tenant.id)
-                .bind(&email)
-                .fetch_optional(&st.db)
-                .await?;
-        if let Some(user_id) = user_id {
-            let token = identity::create_verification(&st.db, tenant.id, user_id, "reset_password", 1).await?;
-            let link = format!("{}/reset-password?token={token}", tenant.issuer(&st.cfg));
-            let (cfg, subject) = (st.cfg.clone(), format!("Reset your password for {}", tenant.name));
-            // spawned so the response time does not reveal whether the account exists
-            tokio::spawn(async move {
-                mail::send(&cfg, &email, &subject, &format!("Reset your password (valid for one hour):\n\n{link}\n")).await
-            });
-        }
-    }
+    identity::send_reset(&st, &tenant, &f.email).await?;
     Ok(forgot_page(&tenant, Some("If an account exists for that address, a reset link is on its way.")))
 }
 
@@ -284,21 +247,10 @@ struct NewPassword {
 }
 
 async fn reset(State(st): State<AppState>, tenant: Tenant, Query(q): Query<Token>, Form(f): Form<NewPassword>) -> Result<Response> {
-    // checked before the token is consumed, so a rejected password does not burn the link
-    if let Err(AppError::BadRequest(msg)) = identity::check_password(&tenant, &f.password) {
-        return Ok(reset_page(&tenant, Some(&msg)));
-    }
-    let token = q.token.unwrap_or_default();
-    let Some(user_id) = identity::consume_verification(&st.db, tenant.id, &token, "reset_password").await? else {
-        return Ok(message(&tenant, "Reset password", None, Some("This link is invalid or has expired."), true));
+    match identity::reset_password(&st, &tenant, &q.token.unwrap_or_default(), f.password).await {
+        Err(AppError::BadRequest(msg)) => return Ok(reset_page(&tenant, Some(&msg))),
+        Ok(false) => return Ok(message(&tenant, "Reset password", None, Some("This link is invalid or has expired."), true)),
+        r => r?,
     };
-    let hash = identity::hash_password(f.password).await?;
-    // the link proved control of the mailbox, so the address counts as verified
-    sqlx::query("update app_user set password_hash = $1, email_verified = true where id = $2")
-        .bind(hash)
-        .bind(user_id)
-        .execute(&st.db)
-        .await?;
-    identity::revoke_user(&st.db, user_id).await?;
     Ok(message(&tenant, "Password updated", Some("Your password was changed and all other sessions were signed out."), None, true))
 }

@@ -18,7 +18,7 @@ use uuid::Uuid;
 
 use crate::{
     error::{AppError, Result},
-    identity::{self, random_token, User},
+    identity::{self, random_token, Surface, User},
     pages::{self, ReturnTo},
     tenant::Tenant,
     AppState,
@@ -57,12 +57,12 @@ pub fn label(provider: &str) -> &'static str {
 }
 
 pub fn router() -> Router<AppState> {
-    Router::new().route("/social/{provider}", get(start)).route("/social/{provider}/callback", get(callback))
+    Router::new().route("/social/{provider}", get(hosted_start)).route("/social/{provider}/callback", get(hosted_callback))
 }
 
 #[derive(Deserialize)]
-struct ProviderPath {
-    provider: String,
+pub struct ProviderPath {
+    pub provider: String,
 }
 
 async fn connector(db: &PgPool, tenant_id: Uuid, provider: &str) -> Result<(String, String)> {
@@ -74,39 +74,103 @@ async fn connector(db: &PgPool, tenant_id: Uuid, provider: &str) -> Result<(Stri
         .ok_or(AppError::NotFound)
 }
 
-fn callback_url(st: &AppState, tenant: &Tenant, provider: &str) -> String {
-    format!("{}/social/{provider}/callback", tenant.issuer(&st.cfg))
+/// Hosted callbacks come back to the gateway; session API callbacks come back through the tenant app's proxy.
+fn callback_url(st: &AppState, tenant: &Tenant, provider: &str, surface: Surface) -> String {
+    match surface {
+        Surface::Hosted => format!("{}/social/{provider}/callback", tenant.issuer(&st.cfg)),
+        Surface::Api => format!("{}/api/auth/social/{provider}/callback", tenant.config.app_url.as_deref().unwrap_or_default()),
+    }
 }
 
-async fn start(
-    State(st): State<AppState>,
-    tenant: Tenant,
-    Path(path): Path<ProviderPath>,
-    Query(q): Query<ReturnTo>,
-) -> Result<Response> {
-    let p = provider(&path.provider).ok_or(AppError::NotFound)?;
-    let (client_id, _) = connector(&st.db, tenant.id, &path.provider).await?;
+/// Redirects to the provider. `return_to` must already be validated by the caller.
+pub async fn begin(st: &AppState, tenant: &Tenant, provider_name: &str, return_to: &str, surface: Surface) -> Result<Response> {
+    let p = provider(provider_name).ok_or(AppError::NotFound)?;
+    let (client_id, _) = connector(&st.db, tenant.id, provider_name).await?;
     // The state carries return_to; the cookie holds the same string, so the callback can trust both.
-    let state = format!("{}.{}", random_token(), URL_SAFE_NO_PAD.encode(q.safe(&tenant).unwrap_or_default()));
+    let state = format!("{}.{}", random_token(), URL_SAFE_NO_PAD.encode(return_to));
     let url = Url::parse_with_params(
         p.authorize,
         [
             ("client_id", client_id.as_str()),
-            ("redirect_uri", &callback_url(&st, &tenant, &path.provider)),
+            ("redirect_uri", &callback_url(st, tenant, provider_name, surface)),
             ("response_type", "code"),
             ("scope", p.scope),
             ("state", &state),
         ],
     )
     .map_err(crate::error::internal)?;
-    let cookie = identity::set_cookie(&st.cfg, &tenant, STATE_COOKIE, &state, 600);
+    let cookie = identity::set_cookie(&st.cfg, tenant, surface, STATE_COOKIE, &state, 600);
     Ok(([(header::SET_COOKIE, cookie)], Redirect::to(url.as_str())).into_response())
 }
 
+async fn hosted_start(State(st): State<AppState>, tenant: Tenant, Path(path): Path<ProviderPath>, Query(q): Query<ReturnTo>) -> Result<Response> {
+    begin(&st, &tenant, &path.provider, q.safe(&tenant).unwrap_or_default(), Surface::Hosted).await
+}
+
 #[derive(Deserialize)]
-struct Callback {
+pub struct Callback {
     code: Option<String>,
     state: Option<String>,
+}
+
+/// Completes the provider round trip: the signed-in user and the `return_to` from `begin` (may be empty).
+/// The inner error is a message for the person signing in.
+pub async fn finish(
+    st: &AppState,
+    tenant: &Tenant,
+    provider_name: &str,
+    q: Callback,
+    headers: &HeaderMap,
+    surface: Surface,
+) -> Result<std::result::Result<(User, String), &'static str>> {
+    let p = provider(provider_name).ok_or(AppError::NotFound)?;
+    let (client_id, client_secret) = connector(&st.db, tenant.id, provider_name).await?;
+
+    let (Some(code), Some(state)) = (q.code, q.state) else { return Ok(Err("Sign-in was cancelled.")) };
+    if identity::cookie(headers, STATE_COOKIE) != Some(state.as_str()) {
+        return Ok(Err("Sign-in session expired. Please try again."));
+    }
+
+    let redirect_uri = callback_url(st, tenant, provider_name, surface);
+    let profile = match fetch_profile(provider_name, &p, &client_id, &client_secret, &code, &redirect_uri).await {
+        Ok(profile) => profile,
+        Err(e) => {
+            tracing::warn!("{provider_name} sign-in failed: {e}");
+            return Ok(Err("The provider did not complete the sign-in."));
+        }
+    };
+    let user = match link_or_create(&st.db, tenant, provider_name, profile).await? {
+        Ok(user) => user,
+        Err(why) => return Ok(Err(why)),
+    };
+    let return_to = state
+        .split_once('.')
+        .and_then(|(_, r)| URL_SAFE_NO_PAD.decode(r).ok())
+        .and_then(|r| String::from_utf8(r).ok())
+        .unwrap_or_default();
+    Ok(Ok((user, return_to)))
+}
+
+/// Clears the one-time state cookie once the round trip is over.
+pub fn clear_state(st: &AppState, tenant: &Tenant, surface: Surface) -> axum::http::HeaderValue {
+    identity::set_cookie(&st.cfg, tenant, surface, STATE_COOKIE, "", 0)
+}
+
+async fn hosted_callback(
+    State(st): State<AppState>,
+    tenant: Tenant,
+    Path(path): Path<ProviderPath>,
+    Query(q): Query<Callback>,
+    headers: HeaderMap,
+) -> Result<Response> {
+    let (user, return_to) = match finish(&st, &tenant, &path.provider, q, &headers, Surface::Hosted).await? {
+        Ok(done) => done,
+        Err(why) => return Ok(pages::message(&tenant, "Sign in", None, Some(why), true)),
+    };
+    let return_to = ReturnTo { return_to: Some(return_to).filter(|r| !r.is_empty()) };
+    let mut res = pages::signed_in(&st, &tenant, user.id, &headers, return_to.safe(&tenant)).await?;
+    res.headers_mut().append(header::SET_COOKIE, clear_state(&st, &tenant, Surface::Hosted));
+    Ok(res)
 }
 
 /// What a provider vouches for. `email` is only set when the provider says it is verified.
@@ -114,45 +178,6 @@ pub struct Profile {
     pub id: String,
     pub email: Option<String>,
     pub name: String,
-}
-
-async fn callback(
-    State(st): State<AppState>,
-    tenant: Tenant,
-    Path(path): Path<ProviderPath>,
-    Query(q): Query<Callback>,
-    headers: HeaderMap,
-) -> Result<Response> {
-    let failed = |why: &str| Ok(pages::message(&tenant, "Sign in", None, Some(why), true));
-    let p = provider(&path.provider).ok_or(AppError::NotFound)?;
-    let (client_id, client_secret) = connector(&st.db, tenant.id, &path.provider).await?;
-
-    let (Some(code), Some(state)) = (q.code, q.state) else { return failed("Sign-in was cancelled.") };
-    if identity::cookie(&headers, STATE_COOKIE) != Some(state.as_str()) {
-        return failed("Sign-in session expired. Please try again.");
-    }
-
-    let profile = match fetch_profile(&path.provider, &p, &client_id, &client_secret, &code, &callback_url(&st, &tenant, &path.provider)).await {
-        Ok(profile) => profile,
-        Err(e) => {
-            tracing::warn!("{} sign-in failed: {e}", path.provider);
-            return failed("The provider did not complete the sign-in.");
-        }
-    };
-    let user = match link_or_create(&st.db, &tenant, &path.provider, profile).await? {
-        Ok(user) => user,
-        Err(why) => return failed(why),
-    };
-
-    let return_to = state
-        .split_once('.')
-        .and_then(|(_, r)| URL_SAFE_NO_PAD.decode(r).ok())
-        .and_then(|r| String::from_utf8(r).ok())
-        .filter(|r| !r.is_empty());
-    let return_to = ReturnTo { return_to };
-    let mut res = pages::signed_in(&st, &tenant, user.id, &headers, return_to.safe(&tenant)).await?;
-    res.headers_mut().append(header::SET_COOKIE, identity::set_cookie(&st.cfg, &tenant, STATE_COOKIE, "", 0));
-    Ok(res)
 }
 
 async fn fetch_profile(

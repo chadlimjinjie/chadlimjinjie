@@ -14,8 +14,9 @@ use uuid::Uuid;
 
 use crate::{
     error::{bad, internal, Result},
+    mail,
     tenant::Tenant,
-    Config,
+    AppState, Config,
 };
 
 const SESSION_COOKIE: &str = "auth_session";
@@ -118,15 +119,27 @@ pub fn cookie<'a>(headers: &'a HeaderMap, name: &str) -> Option<&'a str> {
         .map(|(_, v)| v)
 }
 
-/// Cookies are scoped to the tenant's path, so each tenant keeps its own browser session.
-pub fn set_cookie(cfg: &Config, tenant: &Tenant, name: &str, value: &str, max_age_secs: i64) -> HeaderValue {
-    let secure = if cfg.public_url.starts_with("https://") { "; Secure" } else { "" };
-    let cookie = format!("{name}={value}; Path={}; HttpOnly; SameSite=Lax; Max-Age={max_age_secs}{secure}", tenant.base());
+/// Where a cookie lives: the hosted pages on the gateway, or the session API that a tenant app proxies
+/// on its own origin (host-only, so the app's domain owns it).
+#[derive(Clone, Copy, PartialEq)]
+pub enum Surface {
+    Hosted,
+    Api,
+}
+
+/// Hosted cookies are scoped to the tenant's path, so each tenant keeps its own browser session.
+pub fn set_cookie(cfg: &Config, tenant: &Tenant, surface: Surface, name: &str, value: &str, max_age_secs: i64) -> HeaderValue {
+    let (path, origin) = match surface {
+        Surface::Hosted => (tenant.base(), cfg.public_url.as_str()),
+        Surface::Api => ("/".to_string(), tenant.config.app_url.as_deref().unwrap_or_default()),
+    };
+    let secure = if origin.starts_with("https://") { "; Secure" } else { "" };
+    let cookie = format!("{name}={value}; Path={path}; HttpOnly; SameSite=Lax; Max-Age={max_age_secs}{secure}");
     HeaderValue::from_str(&cookie).unwrap_or(HeaderValue::from_static(""))
 }
 
 /// Creates a session and returns its `Set-Cookie` value.
-pub async fn create_session(db: &PgPool, cfg: &Config, tenant: &Tenant, user_id: Uuid, headers: &HeaderMap) -> Result<HeaderValue> {
+pub async fn create_session(db: &PgPool, cfg: &Config, tenant: &Tenant, surface: Surface, user_id: Uuid, headers: &HeaderMap) -> Result<HeaderValue> {
     let token = random_token();
     let days = tenant.config.session_ttl_days;
     let text = |name: &str| headers.get(name).and_then(|v| v.to_str().ok()).map(|v| v.chars().take(300).collect::<String>());
@@ -144,7 +157,7 @@ pub async fn create_session(db: &PgPool, cfg: &Config, tenant: &Tenant, user_id:
     .bind(days as i32)
     .execute(db)
     .await?;
-    Ok(set_cookie(cfg, tenant, SESSION_COOKIE, &token, days * 86_400))
+    Ok(set_cookie(cfg, tenant, surface, SESSION_COOKIE, &token, days * 86_400))
 }
 
 /// The signed-in user for this tenant and when they authenticated.
@@ -164,7 +177,7 @@ pub async fn current_user(db: &PgPool, tenant: &Tenant, headers: &HeaderMap) -> 
 }
 
 /// Deletes the current browser session and returns the cookie-clearing header.
-pub async fn end_session(db: &PgPool, cfg: &Config, tenant: &Tenant, headers: &HeaderMap) -> Result<HeaderValue> {
+pub async fn end_session(db: &PgPool, cfg: &Config, tenant: &Tenant, surface: Surface, headers: &HeaderMap) -> Result<HeaderValue> {
     if let Some(token) = cookie(headers, SESSION_COOKIE) {
         sqlx::query("delete from session where token_hash = $1 and tenant_id = $2")
             .bind(sha256(token))
@@ -172,7 +185,7 @@ pub async fn end_session(db: &PgPool, cfg: &Config, tenant: &Tenant, headers: &H
             .execute(db)
             .await?;
     }
-    Ok(set_cookie(cfg, tenant, SESSION_COOKIE, "", 0))
+    Ok(set_cookie(cfg, tenant, surface, SESSION_COOKIE, "", 0))
 }
 
 /// Signs the user out everywhere: browser sessions and refresh tokens.
@@ -212,4 +225,85 @@ pub async fn consume_verification(db: &PgPool, tenant_id: Uuid, token: &str, pur
     .bind(purpose)
     .fetch_optional(db)
     .await?)
+}
+
+/// Mail links open the tenant app's own pages when it has one, otherwise the hosted pages.
+fn mail_link(st: &AppState, tenant: &Tenant, path: &str, token: &str) -> String {
+    let base = tenant.config.app_url.clone().unwrap_or_else(|| tenant.issuer(&st.cfg));
+    format!("{base}/{path}?token={token}")
+}
+
+/// Registers a password account and mails a verification link. A taken address is a silent no-op,
+/// so the outcome does not reveal who is registered. Bad input is a `BadRequest` with a user-facing message.
+pub async fn register(st: &AppState, tenant: &Tenant, name: &str, email: &str, password: String) -> Result<()> {
+    let email = normalize_email(email).ok_or_else(|| bad("Enter a valid email address."))?;
+    check_password(tenant, &password)?;
+    let hash = hash_password(password).await?;
+    let created: Option<Uuid> = sqlx::query_scalar(
+        "insert into app_user (tenant_id, email, name, password_hash) values ($1, $2, $3, $4)
+         on conflict (tenant_id, email) do nothing returning id",
+    )
+    .bind(tenant.id)
+    .bind(&email)
+    .bind(name.trim().chars().take(200).collect::<String>())
+    .bind(hash)
+    .fetch_optional(&st.db)
+    .await?;
+    if let Some(user_id) = created {
+        let token = create_verification(&st.db, tenant.id, user_id, "verify_email", 48).await?;
+        let link = mail_link(st, tenant, "verify-email", &token);
+        let (cfg, subject) = (st.cfg.clone(), format!("Verify your email for {}", tenant.name));
+        tokio::spawn(async move { mail::send(&cfg, &email, &subject, &format!("Confirm your email address:\n\n{link}\n")).await });
+    }
+    Ok(())
+}
+
+/// Returns false when the link is invalid or expired.
+pub async fn verify_email(st: &AppState, tenant: &Tenant, token: &str) -> Result<bool> {
+    let Some(user_id) = consume_verification(&st.db, tenant.id, token, "verify_email").await? else { return Ok(false) };
+    sqlx::query("update app_user set email_verified = true where id = $1").bind(user_id).execute(&st.db).await?;
+    Ok(true)
+}
+
+/// Mails a reset link if the account exists; the caller always answers the same.
+pub async fn send_reset(st: &AppState, tenant: &Tenant, email: &str) -> Result<()> {
+    let Some(email) = normalize_email(email) else { return Ok(()) };
+    let user_id: Option<Uuid> = sqlx::query_scalar("select id from app_user where tenant_id = $1 and email = $2 and not suspended")
+        .bind(tenant.id)
+        .bind(&email)
+        .fetch_optional(&st.db)
+        .await?;
+    if let Some(user_id) = user_id {
+        let token = create_verification(&st.db, tenant.id, user_id, "reset_password", 1).await?;
+        let link = mail_link(st, tenant, "reset-password", &token);
+        let (cfg, subject) = (st.cfg.clone(), format!("Reset your password for {}", tenant.name));
+        // spawned so the response time does not reveal whether the account exists
+        tokio::spawn(async move { mail::send(&cfg, &email, &subject, &format!("Reset your password (valid for one hour):\n\n{link}\n")).await });
+    }
+    Ok(())
+}
+
+/// Sets a new password and signs the user out everywhere. Returns false when the link is invalid or expired.
+pub async fn reset_password(st: &AppState, tenant: &Tenant, token: &str, password: String) -> Result<bool> {
+    // checked before the token is consumed, so a rejected password does not burn the link
+    check_password(tenant, &password)?;
+    let Some(user_id) = consume_verification(&st.db, tenant.id, token, "reset_password").await? else { return Ok(false) };
+    let hash = hash_password(password).await?;
+    // the link proved control of the mailbox, so the address counts as verified
+    sqlx::query("update app_user set password_hash = $1, email_verified = true where id = $2")
+        .bind(hash)
+        .bind(user_id)
+        .execute(&st.db)
+        .await?;
+    revoke_user(&st.db, user_id).await?;
+    Ok(true)
+}
+
+/// The user's roles in this tenant as (name, scopes).
+pub async fn roles(db: &PgPool, tenant_id: Uuid, user_id: Uuid) -> Result<Vec<(String, Vec<String>)>> {
+    Ok(sqlx::query_as("select r.name, r.scopes from role r join user_role ur on ur.role_id = r.id where ur.user_id = $1 and r.tenant_id = $2 order by r.name")
+        .bind(user_id)
+        .bind(tenant_id)
+        .fetch_all(db)
+        .await?)
 }
