@@ -1,5 +1,3 @@
-## Hi there 👋
-
 <!--
 **chadlimjinjie/chadlimjinjie** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
 
@@ -14,3 +12,4 @@ Here are some ideas to get you started:
 - 😄 Pronouns: ...
 - ⚡ Fun fact: ...
 -->
+![My stats](https://gateway.midtone.tech/stats/u/chadlimjinjie.svg)
